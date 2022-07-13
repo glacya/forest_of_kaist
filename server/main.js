@@ -5,6 +5,12 @@ var port = process.env.PORT || 80;
 
 var dir_name = "/root/forest_of_kaist/client/"
 
+function debug(str) {
+    var time = new Date();
+    var t = time.toLocaleString();
+    console.log(t + str);
+} 
+
 // TEMP CODE: set rendering option to EJS
 app.set('view engine', 'ejs');
 
@@ -16,7 +22,11 @@ app.get("/", (req, res) => {
     res.render(dir_name + "test.ejs");
 });
 
-app.get("")
+app.get("/:file", (req, res) => {
+    var file = req.params.file;
+    console.log(`GET: /${file}`);
+    res.sendFile(dir_name + file);
+})
 
 // main game.
 // TODO: redirect to login page if not logged in.
@@ -26,17 +36,24 @@ app.get("/game.js", (req, res) => {
 })
 
 io.on('connection', (socket) => {
-    
     //socket.emit으로 현재 연결한 상대에게 신호를 보낼 수 있다.
-    socket.emit('usercount', io.engine.clientsCount);
+    
 
-    // on 함수로 이벤트를 정의해 신호를 수신할 수 있다.
-    socket.on('message', (msg) => {
-        //msg에는 클라이언트에서 전송한 매개변수가 들어온다. 이러한 매개변수의 수에는 제한이 없다.
-        console.log('Message received: ' + msg);
+    socket.on('move', (msg) => {
+        // MEMO: 'msg' contains variable sent from client.
+        // In this case, msg would contain the followings:
+        // - ID of the user
+        // - position of the user (x, y)
 
-        // io.emit으로 연결된 모든 소켓들에 신호를 보낼 수 있다.
-        io.emit('message', msg);
+        debug("move: 이동함");
+        // Emit position to every client connected to the server.
+        // The clients will take care of movements.
+        io.emit('move', msg);
+    });
+
+    socket.on('enter_building', (msg) => {
+        // MEMO: do we really need to enter building?
+        debug('enter_building: 빌딩 들어감');
     });
 
     socket.on('client_msg', (msg) => {
@@ -45,8 +62,6 @@ io.on('connection', (socket) => {
     });
 });
 
-console.log("test?");
-
 server.listen(port, function() {
-    console.log('Server is on!!');
+    console.log('서버 켰다.');
 });
