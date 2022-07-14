@@ -87,7 +87,7 @@ passport.use('local', new LocalStrategy({
 
 
 const dir_name = "/root/forest_of_kaist/client/forest-of-kaist/"
-const upper_dir = "/root/forest_of_kaist/"
+const upper_dir = "/Users/wooil/Documents/dev/CS496/forest-of-kaist/"
 
 function debug(str) {
     var time = new Date();

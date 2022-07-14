@@ -5,6 +5,7 @@ import io from 'socket.io-client';
 
 import { View } from './js/View';
 import Character from './js/Character';
+import Building from './js/Building';
 
 // const http = require('http');
 // const express = require('express');
@@ -21,6 +22,7 @@ function App() {
   return (
     <div>
       { View() }
+      { Building() }
       { Character() }
     </div>
   );
