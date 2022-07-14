@@ -1,7 +1,7 @@
 import React, { useEffect, useState }  from "react";
 
 import { socket } from "../App";
-import { default as Obj } from "./Object";
+import { Object as Obj } from "./Object";
 import { mapClass } from "./Map";
 import { view } from "./View";
 
@@ -21,22 +21,22 @@ class CharacterObj extends Obj {
     super(size, pos, img);
     this.name = name;
   }
-  
 }
 
+const character = new CharacterObj({width: 2, height: 2}, "center", imgList, "nupjuk");
+
 function Character() {
-  const character = new CharacterObj({width: 2, height: 2}, "center", imgList, "nupjuk");
   const [posImg, setPosImg] = useState({
     pos: character.pos,
     img: character.img.down1
   });
-  const [isLoading, setIsLoading] = useState(true);
   
+  // For cashing images
+  const [isLoading, setIsLoading] = useState(true);
   useEffect(() => {
     const imgs = Object.values(imgList);
     cacheImages(imgs);
   }, []);
-  
   const cacheImages = async (srcArray) => {
     const promises = await srcArray.map((src) => {
       return new Promise(function (resolve, reject) {

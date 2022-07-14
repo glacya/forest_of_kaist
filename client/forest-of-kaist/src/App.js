@@ -1,30 +1,51 @@
 // import logo from './logo.svg';
 import './App.css';
-import React, { useEffect } from "react";
+import React, { useEffect, useState, useRef } from "react";
+import { createPortal } from "react-dom";
 import io from 'socket.io-client';
 
 import { View } from './js/View';
 import Character from './js/Character';
 import Building from './js/Building';
 
-// const http = require('http');
-// const express = require('express');
-// const socketio = require('socket.io');
-
-// const app = express();
-// const server = http.createServer(app);
-// const io = socketio(server);
 const socket = io.connect('http://localhost:80', {
   cors: { origin: '*' }
 });
 
+// const RenderInWindow = (props) => {
+//   const [container, setContainer] = useState(null);
+//   const newWindow = useRef(window);
+
+//   useEffect(() => {
+//     const div = document.createElement("div");
+//     setContainer(div);
+//   }, []);
+
+//   useEffect(() => {
+//     if (container) {
+//       newWindow.current = window.open(
+//         "",
+//         "",
+//         "width=600,height=400,left=200,top=200"
+//       );
+//       newWindow.current.document.body.appendChild(container);
+//       const curWindow = newWindow.current;
+//       return () => curWindow.close();
+//     }
+//   }, [container]);
+
+//   return container && createPortal(props.children, container);
+// };
+
 function App() {
   return (
+    // <RenderInWindow>
     <div>
       { View() }
       { Building() }
       { Character() }
-    </div>
+    /</div>
+    // </RenderInWindow>
   );
 }
 

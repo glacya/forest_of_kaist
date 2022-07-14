@@ -1,7 +1,7 @@
 import React, { useEffect, useState }  from "react";
 import { socket } from "../App";
 import { mapClass } from "./Map";
-import Object from "./Object";
+import { Object } from "./Object";
 
 class ViewObj extends Object {
   constructor(size, pos) {
