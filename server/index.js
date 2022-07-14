@@ -148,6 +148,7 @@ app.get("/register.html", (req, res) => {
             if (error) {
                 // Query error.
                 debug("Register failed due to query error.");
+                debug(error.message);
                 res.redirect('/register.html');
             }
             else if (rows.length > 0) {
@@ -161,6 +162,7 @@ app.get("/register.html", (req, res) => {
                     if (error) {
                         // Query error again..
                         debug("Register failed due to query error...");
+                        debug(error.message);
                         res.redirect('/register.html');
                     }
                     else {
@@ -181,7 +183,7 @@ app.get("/login.html", (req, res) => {
     var id = req.query.id;
     var pw = req.query.pw;
     if (id != undefined || pw != undefined) {
-        debug("query parameter: ID = " + req.query.id + ", PW = " + req.query.pw);
+        debug("query parameter: ID = " + req.query.id);
         connection.query('select * from users where id=?', [id], async (error, rows, field) => {
             if (error) {
                 // Query error.
