@@ -3,10 +3,19 @@ import { socket } from "../App";
 import { mapClass } from "./Map";
 import { Object } from "./Object";
 
-class ViewObj extends Object {
+class ViewClass{
   constructor(size, pos) {
-      super(size, pos);
-  } 
+      this.size = size;
+      if (pos === "center") this.pos = this.getCenterPos();
+      else this.pos = { x: pos.x, y: pos.y };
+  }
+
+  getCenterPos() {
+    return {
+      x: mapClass.size.width / 2 - this.size.width / 2, 
+      y: mapClass.size.height / 2 - this.size.height / 2
+    };
+  }
   
   unitposToPxpos(unitpos) {
     return {
@@ -23,7 +32,7 @@ class ViewObj extends Object {
   }
 }
 
-const view = new ViewObj({width: 20, height: 15}, "center");
+const view = new ViewClass({width: 20, height: 15}, "center");
   
 function View() {
     const divElement = React.createElement(

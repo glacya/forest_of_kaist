@@ -6,8 +6,9 @@ import io from 'socket.io-client';
 import Cookies from 'js-cookie';
 
 import { View } from './js/View';
-import Character from './js/Character';
-import Building from './js/Building';
+// import Character from './js/Character';
+// import Building from './js/Building';
+import { Object } from './js/Object';
 
 const socket = io.connect('http://localhost:80', {
   cors: { origin: '*' }
@@ -45,8 +46,7 @@ function App() {
     // <RenderInWindow>
     <div>
       { View() }
-      { Building() }
-      { Character() }
+      { Object() }
     /</div>
     // </RenderInWindow>
   );
