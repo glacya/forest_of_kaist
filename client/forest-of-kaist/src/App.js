@@ -1,8 +1,10 @@
 // import logo from './logo.svg';
 import './App.css';
 import React, { useEffect } from "react";
-import Character from './js/Character';
 import io from 'socket.io-client';
+
+import { View } from './js/View';
+import Character from './js/Character';
 
 // const http = require('http');
 // const express = require('express');
@@ -11,13 +13,16 @@ import io from 'socket.io-client';
 // const app = express();
 // const server = http.createServer(app);
 // const io = socketio(server);
-const socket = io.connect('http://localhost:8000', {
+const socket = io.connect('http://localhost:80', {
   cors: { origin: '*' }
 });
 
 function App() {
   return (
-    <div>{Character()}</div>
+    <div>
+      { View() }
+      { Character() }
+    </div>
   );
 }
 
