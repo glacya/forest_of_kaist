@@ -2,6 +2,7 @@ const session = require('express-session');
 const mysql_session = require('express-mysql-session');
 const app = require('express')();
 const path = require('path');
+const util = require('util');
 
 var cors = require('cors');
 
@@ -89,6 +90,8 @@ passport.use('local', new LocalStrategy({
     }
 ));
 
+const random_bytes_promise = util.promisify(crypto.randomBytes);
+const pbkdf2_promise = util.promisify(crypto.pbkdf2);
 
 function debug(str) {
     var time = new Date();
@@ -96,13 +99,24 @@ function debug(str) {
     console.log(t + ": " + str);
 }
 
-function encrypt(password) {
-    crypto.randomBytes(64, (error, buffer) => {
-        const salt = buffer.toString('base64');
-		crypto.pbkdf2(password, salt, 100, 64, 'sha512', (err, key) =>{
-			return key.toString('base64');
-		})
-    })
+const create_salt = async() => {
+    const buffer = await random_bytes_promise(64);
+    return buffer.toString("base64");
+}
+
+const hash_password = async(password) => {
+    const salt = await create_salt();
+    const key = await pbkdf2_promise(password, salt, 100, 64, "sha512");
+    const hashed_pw = key.toString("base64");
+  
+    return { hashed_pw, salt };
+};
+
+const verify = async(user_pw, user_salt, answer) => {
+    const key = await pbkdf2_promise(user_pw, user_salt, 100, 64, "sha512");
+    const result = key.toString("base64");
+
+    return result === answer;
 }
 
 // TEMP CODE: set rendering option to EJS
@@ -114,6 +128,7 @@ app.get("/", (req, res) => {
     debug("GET /");
     if (req.session.is_logined === true) {
         debug("Already logged in.");
+        res.cookie("id", req.session.id);
         res.redirect("http://localhost:3000/index.html");
     }
     else {
@@ -128,8 +143,8 @@ app.get("/register.html", (req, res) => {
     var pw = req.query.pw;
 
     if (id != undefined && pw != undefined) {
-        debug(`With id = ${id}, pw = ${pw}`);
-        connection.query('select id from users where id=?', [id], (error, rows, field) => {
+        debug(`With id = ${id}`);
+        connection.query('select id from users where id=?', [id], async (error, rows, field) => {
             if (error) {
                 // Query error.
                 debug("Register failed due to query error.");
@@ -141,14 +156,15 @@ app.get("/register.html", (req, res) => {
             }
             else {
                 debug("OK, you can use this id..");
-                connection.query('insert into users(id, pw) values(?, ?)', [id, pw], (error, rows, field) => {
+                const hashed_pw = await hash_password(pw);
+                connection.query('insert into users(id, pw, salt) values(?, ?, ?)', [id, hashed_pw.hashed_pw, hashed_pw.salt], (error, rows, field) => {
                     if (error) {
                         // Query error again..
                         debug("Register failed due to query error...");
                         res.redirect('/register.html');
                     }
                     else {
-                        debug(`User ${id} successfully registered.`);
+                        debug(`User ${id}, ${hashed_pw.hashed_pw} successfully registered.`);
                         res.redirect('/')
                     }
                 })
@@ -166,7 +182,7 @@ app.get("/login.html", (req, res) => {
     var pw = req.query.pw;
     if (id != undefined || pw != undefined) {
         debug("query parameter: ID = " + req.query.id + ", PW = " + req.query.pw);
-        connection.query('select * from users where id=? and pw=?', [id, pw], (error, rows, field) => {
+        connection.query('select * from users where id=?', [id], async (error, rows, field) => {
             if (error) {
                 // Query error.
                 debug("Login failed due to query error.");
@@ -177,12 +193,21 @@ app.get("/login.html", (req, res) => {
                 res.redirect('/');
             }
             else {
-                debug("Login success.");
-                req.session.id = rows.id;
-                req.session.is_logined = true;
-                req.session.save(function() {
-                    res.redirect('http://localhost:3000/index.html');
-                })
+                const user_info = rows[0];
+                if (await verify(pw, user_info.salt, user_info.pw)) {
+                    debug("Login success.");
+                    req.session.id = rows.id;
+                    req.session.is_logined = true;
+                    req.session.save(function() {
+                        res.cookie("id", id);
+                        res.redirect('http://localhost:3000/index.html');
+                    })
+                }
+                else {
+                    debug("There are no such user, or password is incorrect.");
+                    res.redirect("/");
+                }
+                
             }
         })
     }
