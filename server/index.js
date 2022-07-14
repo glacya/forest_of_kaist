@@ -1,6 +1,7 @@
 const session = require('express-session');
 const mysql_session = require('express-mysql-session');
 const app = require('express')();
+const path = require('path');
 
 var cors = require('cors');
 
@@ -39,6 +40,9 @@ const mysql_info = {
 const session_store = new mysql_session(mysql_info);
 
 const connection = mysql.createConnection(mysql_info);
+
+const ios = require('express-socket.io-session');
+io.use(ios(session, {autoSave: true}));
 
 app.use(cors());
 app.use(cookieParser());
@@ -85,9 +89,6 @@ passport.use('local', new LocalStrategy({
     }
 ));
 
-
-const dir_name = "/root/forest_of_kaist/client/forest-of-kaist/"
-const upper_dir = "/root/forest_of_kaist/"
 
 function debug(str) {
     var time = new Date();
@@ -155,7 +156,7 @@ app.get("/register.html", (req, res) => {
         })
     }
     else {
-        res.sendFile(upper_dir + "server/test_register.html");
+        res.sendFile(path.join(__dirname, "./test_register.html"));
     }
 });
 
@@ -186,7 +187,7 @@ app.get("/login.html", (req, res) => {
         })
     }
     else {
-        res.sendFile(upper_dir + 'server/test_login.html');
+        res.sendFile(path.join(__dirname, "./test_login.html"));
     }
 });
 
@@ -200,7 +201,7 @@ app.get("/game.js", (req, res) => {
 
 io.on('connection', (socket) => {
     //socket.emit으로 현재 연결한 상대에게 신호를 보낼 수 있다.
-    debug("IO: somebody entered.");
+    debug(`IO: somebody entered: ${socket.handshake.session.id}`);
 
     socket.on("move", (msg) => {
         // MEMO: 'msg' contains variable sent from client.
@@ -208,7 +209,7 @@ io.on('connection', (socket) => {
         // - ID of the user
         // - position of the user (x, y)
 
-        debug("move: " + msg.x + ", " + msg.y);
+        debug(`move: (${msg.x},\t${msg.y})`);
         // Emit position to every client connected to the server.
         // The clients will take care of movements.
         io.emit('move', msg);
