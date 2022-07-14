@@ -1,30 +1,22 @@
 import React, { useEffect, useState }  from "react";
-import imgDown1 from "../asset/user_down_1.png";
-import imgLeft1 from "../asset/user_left_1.png";
-import imgUp1 from "../asset/user_up_1.png";
-import imgRight1 from "../asset/user_right_1.png";
-import imgDown2 from "../asset/user_down_2.png";
-import imgLeft2 from "../asset/user_left_2.png";
-import imgUp2 from "../asset/user_up_2.png";
-import imgRight2 from "../asset/user_right_2.png";
 
 import { socket } from "../App";
-import Object from "./Object";
+import { default as Obj } from "./Object";
 import { mapClass } from "./Map";
 import { view } from "./View";
 
 const imgList = {
-  down1: imgDown1,
-  down2: imgDown2,
-  left1: imgLeft1,
-  left2: imgLeft2,
-  up1: imgUp1,
-  up2: imgUp2,
-  right1: imgRight1,
-  right2: imgRight2
+  down1: "/images/user_down_1.png",
+  down2: "/images/user_down_2.png",
+  left1: "/images/user_left_1.png",
+  left2: "/images/user_left_2.png",
+  up1: "/images/user_up_1.png",
+  up2: "/images/user_up_2.png",
+  right1: "/images/user_right_1.png",
+  right2: "/images/user_right_2.png"
 }
 
-class CharacterObj extends Object {
+class CharacterObj extends Obj {
   constructor(size, pos, img, name) {
     super(size, pos, img);
     this.name = name;
@@ -34,12 +26,43 @@ class CharacterObj extends Object {
 
 function Character() {
   const character = new CharacterObj({width: 2, height: 2}, "center", imgList, "nupjuk");
-  // const [pos, setPos] = useState(character.pos);
-  // const [img, setImg] = useState(character.img.down1);
   const [posImg, setPosImg] = useState({
     pos: character.pos,
     img: character.img.down1
   });
+  const [isLoading, setIsLoading] = useState(true);
+  
+  useEffect(() => {
+    const imgs = Object.values(imgList);
+    // [
+    //   "/images/user_down_1.png",
+    //   "/images/user_left_1.png",
+    //   "/images/user_up_1.png",
+    //   "/images/user_right_1.png",
+    //   "/images/user_down_2.png",
+    //   "/images/user_left_2.png",
+    //   "/images/user_up_2.png",
+    //   "/images/user_right_2.png"
+    // ];
+    
+    cacheImages(imgs);
+  }, []);
+  
+  const cacheImages = async (srcArray) => {
+    const promises = await srcArray.map((src) => {
+      return new Promise(function (resolve, reject) {
+        const img = new Image();
+        
+        img.src = src;
+        img.onload = resolve();
+        img.onerror = reject();
+      });
+    });
+    
+    await Promise.all(promises);
+    
+    setIsLoading(false);
+  };
   
   useEffect(() => {
     function handleKeyDown(e) {
@@ -83,17 +106,21 @@ function Character() {
     }
   }, [posImg]);
   
-  // const img = <img src={image} alt="Girl in a jacket" width="500" height="600"></img>
   const imgElement = React.createElement(
     "img",
-    { src: posImg.img,
+    { 
+      src: posImg.img,
       alt: character.name, 
       width: mapClass.unitToPx(character.size.width),
       height: mapClass.unitToPx(character.size.height),
       style: { position: "absolute", left: view.unitposToPxpos(posImg.pos).x, top: view.unitposToPxpos(posImg.pos).y}
     }
   )
-  return (imgElement);
+  return (
+    <div>
+      { isLoading ? "Loading image ..." : imgElement }
+    </div>
+  );
 }
 
 export default Character;
