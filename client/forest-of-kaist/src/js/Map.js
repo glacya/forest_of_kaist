@@ -2,8 +2,18 @@ import React, { useEffect, useState }  from "react";
 import { socket } from "../App";
 
 class MapClass {
+  ratio = 50;
+  
   constructor(size) {
     this.size = size;
+  }
+  
+  unitToPx(unit) {
+    return parseFloat(unit) * this.ratio;
+  }
+  
+  pxToUnit(px) {
+    return parseFloat(px) / this.ratio * 10;
   }
 }
 
