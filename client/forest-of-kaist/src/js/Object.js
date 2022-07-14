@@ -9,32 +9,40 @@ class Object {
     else this.pos = { x: pos.x, y: pos.y };
     this.img = img;
   }
-  
+  speed = 0.1;
   getCenterPos() {
     return {
       x: mapClass.size.width / 2 - this.size.width / 2, 
       y: mapClass.size.height / 2 - this.size.height / 2
     };
   }
-  left() {
-    this.pos = { x: this.pos.x - 10, y: this.pos.y };
-    console.log(this.pos);
-    return this.pos;
+  left(pos) {
+    return {
+      x: pos.x - this.speed,
+      y: pos.y
+    };
   }
-  right() {
-    this.pos = { x: this.pos.x + 10, y: this.pos.y };
-    console.log(this.pos);
-    return this.pos;
+  right(pos) {
+    return {
+      x: pos.x + this.speed,
+      y: pos.y
+    };
   }
-  up() {
-    this.pos = { x: this.pos.x, y: this.pos.y - 10 };
-    console.log(this.pos);
-    return this.pos;
+  up(pos) {
+    return {
+      x: pos.x,
+      y: pos.y - this.speed
+    };
   }
-  down() {
-    this.pos = { x: this.pos.x, y: this.pos.y + 10 };
-    console.log(this.pos);
-    return this.pos;
+  down(pos) {
+    return {
+      x: pos.x,
+      y: pos.y + this.speed
+    };
+  }
+  
+  setPos(pos) {
+    this.pos = { x: pos.x.toFixed(1), y: pos.y.toFixed(1) };
   }
 }
 export default Object;
