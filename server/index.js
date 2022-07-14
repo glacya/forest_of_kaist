@@ -1,15 +1,21 @@
 const session = require('express-session');
-const passport = require('passport');
+const mysql_session = require('express-mysql-session');
 const app = require('express')();
+
 var cors = require('cors');
+
+const passport = require('passport');
 const LocalStrategy = require('passport-local').Strategy;
+
+const crypto = require('crypto');
+
 const mysql = require('mysql');
 const fs = require('fs');
 const data = fs.readFileSync('./conf.json');
 const conf = JSON.parse(data);
+
 const cookieParser = require('cookie-parser');
 
-app.use(cors());
 const server = require('http').createServer(app);
 const port = process.env.PORT || 80;
 const io = require("socket.io")(server, {
@@ -23,19 +29,25 @@ const io = require("socket.io")(server, {
     ]
 });
 
-const connection = mysql.createConnection({
+const mysql_info = {
     host: conf.host,
     user: conf.user,
     password: conf.password,
     database: conf.database
-});
+};
 
+const session_store = new mysql_session(mysql_info);
+
+const connection = mysql.createConnection(mysql_info);
+
+app.use(cors());
 app.use(cookieParser());
 app.use(session({
     name: "session_cookie",
     secret: "hmmm",
     resave: false,
     saveUninitialized: false,
+    store: session_store,
     cookie: {
         secure: false,
         httpOnly: true,
@@ -74,12 +86,22 @@ passport.use('local', new LocalStrategy({
 ));
 
 
-var dir_name = "/root/forest_of_kaist/client/forest-of-kaist/"
+const dir_name = "/root/forest_of_kaist/client/forest-of-kaist/"
+const upper_dir = "/root/forest_of_kaist/"
 
 function debug(str) {
     var time = new Date();
     var t = time.toLocaleString();
     console.log(t + ": " + str);
+}
+
+function encrypt(password) {
+    crypto.randomBytes(64, (error, buffer) => {
+        const salt = buffer.toString('base64');
+		crypto.pbkdf2(password, salt, 100, 64, 'sha512', (err, key) =>{
+			return key.toString('base64');
+		})
+    })
 }
 
 // TEMP CODE: set rendering option to EJS
@@ -89,37 +111,85 @@ app.get("/", (req, res) => {
     // TODO: redirect to login page.
     // TODO: if login cookie exists, redirect to main game page.
     debug("GET /");
-    debug("query parameter: ID = " + req.query.username + ", PW = " + req.query.password);
+    if (req.session.is_logined === true) {
+        debug("Already logged in.");
+        res.redirect("http://localhost:3000/index.html");
+    }
+    else {
+        debug("Not logged in, login please");
+        res.redirect("/login.html");
+    }
+});
+
+app.get("/register.html", (req, res) => {
+    debug("GET /register.html");
     var id = req.query.id;
     var pw = req.query.pw;
-    connection.query('select * from users where id=? and pw=?', [id, pw], (error, rows, field) => {
-        if (error) {
-            debug("Login failed.");
-            res.sendFile("/root/forest_of_kaist/server/test.html");
-        }
-        else if (rows.length == 0) {
-            debug("There are no such user, or password is incorrect.");
-            res.sendFile("/root/forest_of_kaist/server/test.html");
-        }
-        else {
-            debug("Login success.");
-            res.sendFile("/root/forest_of_kaist/server/test.html");
-        }
-    })
-    
+
+    if (id != undefined && pw != undefined) {
+        debug(`With id = ${id}, pw = ${pw}`);
+        connection.query('select id from users where id=?', [id], (error, rows, field) => {
+            if (error) {
+                // Query error.
+                debug("Register failed due to query error.");
+                res.redirect('/register.html');
+            }
+            else if (rows.length > 0) {
+                debug(`User ID ${id} already exists.`);
+                res.redirect('/register.html');
+            }
+            else {
+                debug("OK, you can use this id..");
+                connection.query('insert into users(id, pw) values(?, ?)', [id, pw], (error, rows, field) => {
+                    if (error) {
+                        // Query error again..
+                        debug("Register failed due to query error...");
+                        res.redirect('/register.html');
+                    }
+                    else {
+                        debug(`User ${id} successfully registered.`);
+                        res.redirect('/')
+                    }
+                })
+            }
+        })
+    }
+    else {
+        res.sendFile(upper_dir + "server/test_register.html");
+    }
 });
 
-app.get("/:file", (req, res) => {
-    var file = req.params.file;
-    debug(`GET: /${file}`);
-    res.sendFile(dir_name + file);
+
+app.get("/login.html", (req, res) => {
+    var id = req.query.id;
+    var pw = req.query.pw;
+    if (id != undefined || pw != undefined) {
+        debug("query parameter: ID = " + req.query.id + ", PW = " + req.query.pw);
+        connection.query('select * from users where id=? and pw=?', [id, pw], (error, rows, field) => {
+            if (error) {
+                // Query error.
+                debug("Login failed due to query error.");
+                res.redirect('/');
+            }
+            else if (rows.length == 0) {
+                debug("There are no such user, or password is incorrect.");
+                res.redirect('/');
+            }
+            else {
+                debug("Login success.");
+                req.session.id = rows.id;
+                req.session.is_logined = true;
+                req.session.save(function() {
+                    res.redirect('http://localhost:3000/index.html');
+                })
+            }
+        })
+    }
+    else {
+        res.sendFile(upper_dir + 'server/test_login.html');
+    }
 });
 
-app.get("/src/:file", (req, res) => {
-    var file = req.params.file;
-    debug(`GET: /src/${file}`);
-    res.sendFile(dir_name + "src/" + file);
-})
 
 // main game.
 // TODO: redirect to login page if not logged in.
@@ -130,7 +200,7 @@ app.get("/game.js", (req, res) => {
 
 io.on('connection', (socket) => {
     //socket.emit으로 현재 연결한 상대에게 신호를 보낼 수 있다.
-    debug("hi");
+    debug("IO: somebody entered.");
 
     socket.on("move", (msg) => {
         // MEMO: 'msg' contains variable sent from client.
@@ -157,5 +227,5 @@ io.on('connection', (socket) => {
 
 server.listen(port, function() {
     console.log("");
-    debug(`서버 켰다. 포트는 ${port}`);
+    debug(`Server is now on at port ${port}`);
 });
