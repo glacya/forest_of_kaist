@@ -90,7 +90,23 @@ app.get("/", (req, res) => {
     // TODO: if login cookie exists, redirect to main game page.
     debug("GET /");
     debug("query parameter: ID = " + req.query.username + ", PW = " + req.query.password);
-    res.sendFile("/root/forest_of_kaist/server/test.html");
+    var id = req.query.id;
+    var pw = req.query.pw;
+    connection.query('select * from users where id=? and pw=?', [id, pw], (error, rows, field) => {
+        if (error) {
+            debug("Login failed.");
+            res.sendFile("/root/forest_of_kaist/server/test.html");
+        }
+        else if (rows.length == 0) {
+            debug("There are no such user, or password is incorrect.");
+            res.sendFile("/root/forest_of_kaist/server/test.html");
+        }
+        else {
+            debug("Login success.");
+            res.sendFile("/root/forest_of_kaist/server/test.html");
+        }
+    })
+    
 });
 
 app.get("/:file", (req, res) => {
