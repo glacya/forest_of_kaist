@@ -34,17 +34,6 @@ function Character() {
   
   useEffect(() => {
     const imgs = Object.values(imgList);
-    // [
-    //   "/images/user_down_1.png",
-    //   "/images/user_left_1.png",
-    //   "/images/user_up_1.png",
-    //   "/images/user_right_1.png",
-    //   "/images/user_down_2.png",
-    //   "/images/user_left_2.png",
-    //   "/images/user_up_2.png",
-    //   "/images/user_right_2.png"
-    // ];
-    
     cacheImages(imgs);
   }, []);
   
@@ -58,9 +47,7 @@ function Character() {
         img.onerror = reject();
       });
     });
-    
     await Promise.all(promises);
-    
     setIsLoading(false);
   };
   

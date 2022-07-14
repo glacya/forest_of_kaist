@@ -14,8 +14,8 @@ const server = require('http').createServer(app);
 const port = process.env.PORT || 80;
 const io = require("socket.io")(server, {
     cors: {
-      origin: "*",
-      methods: ["GET", "POST"]
+        origin: "*",
+        methods: ["GET", "POST"]
     },
     'transports': [
         'websocket',

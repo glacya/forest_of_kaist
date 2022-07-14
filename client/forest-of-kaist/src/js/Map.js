@@ -9,11 +9,11 @@ class MapClass {
   }
   
   unitToPx(unit) {
-    return parseFloat(unit) * this.ratio;
+    return parseFloat((parseFloat(unit) * this.ratio).toFixed(1));
   }
   
   pxToUnit(px) {
-    return parseFloat(px) / this.ratio * 10;
+    return parseFloat((parseFloat(px) / this.ratio).toFixed(1));
   }
 }
 
@@ -21,7 +21,7 @@ const mapClass = new MapClass({ width: 1000, height: 1000 });
 
 function Map() {
     // const size = { width: 1000, height: 1000 };
-   
+    
     return (<div></div>);
   }
   
