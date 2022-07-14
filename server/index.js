@@ -1,16 +1,47 @@
-// const session = require('express-session');
+const session = require('express-session');
 const passport = require('passport');
-const express = require('express')();
-var router = express.router();
+const app = require('express')();
+var cors = require('cors');
+const LocalStrategy = require('passport-local').Strategy;
+const mysql = require('mysql');
+const fs = require('fs');
+const data = fs.readFileSync('./conf.json');
+const conf = JSON.parse(data);
+const cookieParser = require('cookie-parser');
+
+app.use(cors());
 const server = require('http').createServer(app);
 const port = process.env.PORT || 80;
 const io = require("socket.io")(server, {
     cors: {
       origin: "*",
       methods: ["GET", "POST"]
-    }
+    },
+    'transports': [
+        'websocket',
+        'polling'
+    ]
 });
 
+const connection = mysql.createConnection({
+    host: conf.host,
+    user: conf.user,
+    password: conf.password,
+    database: conf.database
+});
+
+app.use(cookieParser());
+app.use(session({
+    name: "session_cookie",
+    secret: "hmmm",
+    resave: false,
+    saveUninitialized: false,
+    cookie: {
+        secure: false,
+        httpOnly: true,
+        maxAge: 60 * 60 * 1000      // 1 hours
+    }
+}));
 app.use(passport.initialize());
 app.use(passport.session());
 
@@ -28,11 +59,11 @@ passport.use('local', new LocalStrategy({
     usernameField: 'id',
     passwordField: 'pw',
     passReqToCallback: true
-}, function(req, user_id, user_pw, done) {
-    if(user_id==process.env.LOGIN_ID && user_pw==process.env.LOGIN_PW){
+}, function(req, id, pw, done) {
+    if(id==process.env.LOGIN_ID && pw==process.env.LOGIN_PW){
         const user={
-            user_id: user_id,
-            user_pw: user_pw
+            id: id,
+            pw: pw
         }
         console.log("Login check succeeded.");
         return done(null, user)
@@ -43,8 +74,7 @@ passport.use('local', new LocalStrategy({
 ));
 
 
-
-var dir_name = "/root/forest_of_kaist/client/"
+var dir_name = "/root/forest_of_kaist/client/forest-of-kaist/"
 
 function debug(str) {
     var time = new Date();
@@ -59,14 +89,20 @@ app.get("/", (req, res) => {
     // TODO: redirect to login page.
     // TODO: if login cookie exists, redirect to main game page.
     debug("GET /");
-    // res.sendFile(dir_name + "test.html");
-    res.render(dir_name + "test.ejs");
+    debug("query parameter: ID = " + req.query.username + ", PW = " + req.query.password);
+    res.sendFile("/root/forest_of_kaist/server/test.html");
 });
 
 app.get("/:file", (req, res) => {
     var file = req.params.file;
     debug(`GET: /${file}`);
     res.sendFile(dir_name + file);
+});
+
+app.get("/src/:file", (req, res) => {
+    var file = req.params.file;
+    debug(`GET: /src/${file}`);
+    res.sendFile(dir_name + "src/" + file);
 })
 
 // main game.
@@ -78,15 +114,15 @@ app.get("/game.js", (req, res) => {
 
 io.on('connection', (socket) => {
     //socket.emit으로 현재 연결한 상대에게 신호를 보낼 수 있다.
-    
+    debug("hi");
 
-    socket.on('move', (msg) => {
+    socket.on("move", (msg) => {
         // MEMO: 'msg' contains variable sent from client.
         // In this case, msg would contain the followings:
         // - ID of the user
         // - position of the user (x, y)
 
-        debug("move: 이동함");
+        debug("move: " + msg.x + ", " + msg.y);
         // Emit position to every client connected to the server.
         // The clients will take care of movements.
         io.emit('move', msg);
@@ -104,5 +140,6 @@ io.on('connection', (socket) => {
 });
 
 server.listen(port, function() {
-    debug('서버 켰다.');
+    console.log("");
+    debug(`서버 켰다. 포트는 ${port}`);
 });

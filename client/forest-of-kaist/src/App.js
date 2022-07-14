@@ -11,7 +11,7 @@ import io from 'socket.io-client';
 // const app = express();
 // const server = http.createServer(app);
 // const io = socketio(server);
-const socket = io.connect('http://localhost:8000', {
+const socket = io.connect('http://localhost:80', {
   cors: { origin: '*' }
 });
 
