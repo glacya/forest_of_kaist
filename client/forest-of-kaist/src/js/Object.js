@@ -11,6 +11,7 @@ class Object {
     else this.pos = { x: pos.x, y: pos.y };
     this.img = img;
     objList.push(this);
+    console.log(objList);
   }
   
   speed = 0.1;

@@ -1,6 +1,6 @@
 {
     "host" : "localhost",
     "user" : "root",
-    "password" : "globalwarming",
+    "password" : "",
     "database" : "week3"
 }

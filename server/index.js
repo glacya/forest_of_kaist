@@ -148,6 +148,8 @@ app.get("/register.html", (req, res) => {
             if (error) {
                 // Query error.
                 debug("Register failed due to query error.");
+                // debug(error.message);
+                throw error;
                 res.redirect('/register.html');
             }
             else if (rows.length > 0) {

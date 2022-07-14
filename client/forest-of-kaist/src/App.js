@@ -3,6 +3,7 @@ import './App.css';
 import React, { useEffect, useState, useRef } from "react";
 import { createPortal } from "react-dom";
 import io from 'socket.io-client';
+import Cookies from 'js-cookie';
 
 import { View } from './js/View';
 import Character from './js/Character';
@@ -38,6 +39,8 @@ const socket = io.connect('http://localhost:80', {
 // };
 
 function App() {
+  const userId = Cookies.get('id');
+  console.log(`userId: ${userId}`);
   return (
     // <RenderInWindow>
     <div>
