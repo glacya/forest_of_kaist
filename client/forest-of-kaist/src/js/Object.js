@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from "react";
 import { socket } from "../App";
+import Cookies from 'js-cookie';
 
 import { mapClass } from "./Map";
 import { user } from "./Character";
@@ -113,7 +114,11 @@ function ObjectFunc() {
   useEffect(() => {
     socket.emit("enter", user);
     console.log("Entered in the world!");
-    socket.on("welcome", (id) => user.setId(id)); // TODO: change event name
+    console.log(`id: ${Cookies.get('id')}`);
+    socket.on("welcome", (res) => {
+      user.setId(res.id);
+      updateObjList(res.objList);
+    });
     socket.on("updateObjList", (res) => updateObjList(res)); // TODO: change event name
     console.log(currObjElemList);
   }, []);
