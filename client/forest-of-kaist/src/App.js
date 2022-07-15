@@ -8,7 +8,7 @@ import Cookies from 'js-cookie';
 import { View } from './js/View';
 // import Character from './js/Character';
 // import Building from './js/Building';
-import { Object } from './js/Object';
+import { ObjectFunc } from './js/Object';
 
 const socket = io.connect('http://localhost:80', {
   cors: { origin: '*' }
@@ -46,7 +46,7 @@ function App() {
     // <RenderInWindow>
     <div>
       { View() }
-      { Object() }
+      { ObjectFunc() }
     /</div>
     // </RenderInWindow>
   );

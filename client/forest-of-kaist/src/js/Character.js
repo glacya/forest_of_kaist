@@ -21,6 +21,37 @@ class CharacterObj extends ObjectClass {
     super(size, pos, img, user);
     this.name = name;
   }
+  
+  speed = 0.1;
+  
+  left(pos) {
+    return {
+      x: parseFloat((pos.x - this.speed).toFixed(1)),
+      y: pos.y
+    };
+  }
+  right(pos) {
+    return {
+      x: parseFloat((pos.x + this.speed).toFixed(1)),
+      y: pos.y
+    };
+  }
+  up(pos) {
+    return {
+      x: pos.x,
+      y: parseFloat((pos.y - this.speed).toFixed(1))
+    };
+  }
+  down(pos) {
+    return {
+      x: pos.x,
+      y: parseFloat((pos.y + this.speed).toFixed(1))
+    };
+  }
+  
+  setPos(pos) {
+    this.pos = { x: pos.x.toFixed(1), y: pos.y.toFixed(1) };
+  }
 }
 
 const user = new CharacterObj({width: 2, height: 2}, "center", imgList, "nupjuk", true);

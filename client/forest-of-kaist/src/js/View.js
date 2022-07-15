@@ -1,7 +1,8 @@
 import React, { useEffect, useState }  from "react";
 import { socket } from "../App";
 import { mapClass } from "./Map";
-import { Object } from "./Object";
+import { ObjectFunc } from "./Object";
+import { user } from "./Character";
 
 class ViewClass{
   constructor(size, pos) {
@@ -29,6 +30,35 @@ class ViewClass{
       x: mapClass.pxToUnit(pxpos.x - this.pos.x),
       y: mapClass.pxToUnit(pxpos.y - this.pos.y)
     };
+  }
+
+  left(pos) {
+    return {
+      x: parseFloat((pos.x - user.speed).toFixed(1)),
+      y: pos.y
+    };
+  }
+  right(pos) {
+    return {
+      x: parseFloat((pos.x + user.speed).toFixed(1)),
+      y: pos.y
+    };
+  }
+  up(pos) {
+    return {
+      x: pos.x,
+      y: parseFloat((pos.y - user.speed).toFixed(1))
+    };
+  }
+  down(pos) {
+    return {
+      x: pos.x,
+      y: parseFloat((pos.y + user.speed).toFixed(1))
+    };
+  }
+  
+  setPos(pos) {
+    this.pos = { x: pos.x.toFixed(1), y: pos.y.toFixed(1) };
   }
 }
 
