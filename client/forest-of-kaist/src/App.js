@@ -18,7 +18,7 @@ const socket = io.connect(address, {
 
 function App() {
   const userId = Cookies.get('id');
-  console.log(`userId: ${userId}`);
+  // console.log(`userId: ${userId}`);
   return (
     // <RenderInWindow>
     <div>

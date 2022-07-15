@@ -1,5 +1,4 @@
 import { mapClass } from "./Map";
-import { objList } from "./Object"
 
 class ObjectClass { 
   constructor(size, pos, img, user = false, id = null) {
@@ -7,9 +6,7 @@ class ObjectClass {
     if (pos === "center") this.pos = this.getCenterPos();
     else this.pos = { x: pos.x, y: pos.y };
     this.img = img;
-    if (!user) objList.push(this);
     this.id = null;
-    console.log(objList);
   }
 
   setId(id) {
