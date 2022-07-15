@@ -19,7 +19,7 @@ class Cache {
     }
 
     setDefaultUserLocation(id) {
-        console.log("OK, default.");
+        // console.log("OK, default.");
         this.user_location.set(id, {x: 490, y: 490});
     }
 
@@ -104,7 +104,7 @@ class Cache {
                 overlap.push(b2.id);
             }
         }
-        console.log("overlap: ", overlap);
+        // console.log("overlap: ", overlap);
 
         prev_list.forEach(i1 => {
             var exists = false;
