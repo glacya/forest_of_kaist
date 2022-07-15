@@ -192,7 +192,7 @@ app.get("/game.js", (req, res) => {
 
 io.on('connection', (socket) => {
     //socket.emit으로 현재 연결한 상대에게 신호를 보낼 수 있다.
-    debug(`IO: somebody entered: ${socket.handshake.session.id}`);
+    debug(`IO: somebody entered`);
 
     socket.on("move", (msg) => {
         // MEMO: 'msg' contains variable sent from client.

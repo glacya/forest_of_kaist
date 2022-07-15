@@ -9,7 +9,9 @@ import { View } from './js/View';
 import Character from './js/Character';
 import Building from './js/Building';
 
-const socket = io.connect('http://localhost:80', {
+const address = "http://192.249.18.201"
+
+const socket = io.connect(address, {
   cors: { origin: '*' }
 });
 
