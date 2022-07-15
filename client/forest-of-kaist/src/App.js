@@ -6,8 +6,9 @@ import io from 'socket.io-client';
 import Cookies from 'js-cookie';
 
 import { View } from './js/View';
-import Character from './js/Character';
-import Building from './js/Building';
+// import Character from './js/Character';
+// import Building from './js/Building';
+import { ObjectFunc } from './js/Object';
 
 const address = "http://192.249.18.201"
 
@@ -47,8 +48,7 @@ function App() {
     // <RenderInWindow>
     <div>
       { View() }
-      { Building() }
-      { Character() }
+      { ObjectFunc() }
     /</div>
     // </RenderInWindow>
   );

@@ -1,7 +1,7 @@
 import React, { useEffect, useState }  from "react";
 
 import { socket } from "../App";
-import { Object as Obj } from "./Object";
+import { ObjectClass as Obj } from "./Object";
 import { mapClass } from "./Map";
 import { view } from "./View";
 
