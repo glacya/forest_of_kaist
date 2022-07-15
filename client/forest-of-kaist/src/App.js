@@ -1,28 +1,31 @@
 // import logo from './logo.svg';
 import './App.css';
-import React, { useEffect } from "react";
+import React, { useEffect, useState, useRef } from "react";
+import { createPortal } from "react-dom";
 import io from 'socket.io-client';
+import Cookies from 'js-cookie';
 
 import { View } from './js/View';
-import Character from './js/Character';
+// import Character from './js/Character';
+// import Building from './js/Building';
+import { ObjectFunc } from './js/Object';
 
-// const http = require('http');
-// const express = require('express');
-// const socketio = require('socket.io');
+const address = "http://172.10.18.171";
 
-// const app = express();
-// const server = http.createServer(app);
-// const io = socketio(server);
-const socket = io.connect('http://localhost:80', {
+const socket = io.connect(address, {
   cors: { origin: '*' }
 });
 
 function App() {
+  const userId = Cookies.get('id');
+  console.log(`userId: ${userId}`);
   return (
+    // <RenderInWindow>
     <div>
       { View() }
-      { Character() }
-    </div>
+      { ObjectFunc() }
+    /</div>
+    // </RenderInWindow>
   );
 }
 
