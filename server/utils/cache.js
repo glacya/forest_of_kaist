@@ -19,21 +19,43 @@ class Cache {
     }
 
     setDefaultUserLocation(id) {
+        console.log("OK, default.");
         this.user_location.set(id, {x: 490, y: 490});
     }
 
     // Get difference list, and update user information.
     getDiff(user_info) {
-        const prev_list = getObjectList(this.user_location.get(user_info.id));
-        const current_list = getObjectList(user_info.pos);
+        const prev_pos = this.user_location.get(user_info.id);
+        const current_pos = user_info.pos;
+        const prev_list = this.getObjectList(prev_pos);
+        const current_list = this.getObjectList(current_pos);
 
-        this.user_location.set()
+        if (prev_pos != undefined) {
+            this.user_location.set(user_info.id, user_info.pos);
+        }
+        else {
+            return {
+                add: [],
+                delete: []
+            };
+        }
 
-        return this.compute_diff(prev_list, current_list);
+        if (Math.floor(prev_pos.x) == Math.floor(current_pos.x)
+             && Math.floor(prev_pos.y) == Math.floor(current_pos.y)) {
+            return {
+                add: [],
+                delete: []
+            }
+        }
+
+        return this.computeDiff(prev_list, current_list);
     }
 
     // Get nearby objects using position.
     getObjectList(pos) {
+        if (pos == undefined) {
+            return this.map_data;
+        }
         var object_list = [];
         // Use key as 1000 * x + y.
         const x = Math.floor(pos.x);
@@ -43,15 +65,9 @@ class Cache {
         console.log(point_key);
 
         if (consult == undefined) {
-            // Compute here.
-            
-            console.log("not cached yet");
-
-            for (let [i, object] in this.map_data) {
-                if (object.pos.x - 15 > x || object.pos.x + object.size.width + 15 < x) {
-                    object_list.push(object);
-                } 
-                if (object.pos.y - 13 > y || object.pos.y + object.size.height + 13 < y) {
+            for (const object of this.map_data) {
+                if ((x > object.pos.x - 15 && x < object.pos.x + object.size.width + 15)
+                    && y > object.pos.y - 13 && y < object.pos.y + object.size.height + 13) {
                     object_list.push(object);
                 }
             }
@@ -59,14 +75,16 @@ class Cache {
             this.map.set(point_key, object_list);
         }
         else {
-            console.log("cached..");
             object_list = consult;
         }
-
+        // console.log(object_list);
         return object_list;
     }
 
-    compute_diff(prev_list, current_list) {
+    computeDiff(prev_list, current_list) {
+        // console.log("computeDiff prev: ", prev_list);
+        // console.log("computeDiff curr: ", current_list);
+
         var update_info = {
             add: [],
             delete: []
@@ -74,33 +92,61 @@ class Cache {
 
         var overlap = [];
 
-        for (let b2 in current_list) {
+        for (const b2 of current_list) {
             var exists = false;
-            for (let b1 in prev_list) {
+            for (const b1 of prev_list) {
                 if (b1.id == b2.id) {
                     exists = true;
+                    break;
                 }
             }
             if (exists) {
-                overlap.push(b1.id);
+                overlap.push(b2.id);
             }
         }
+        console.log("overlap: ", overlap);
 
-        for (let b1 in prev_list) {
-            for (let id in overlap) {
-                if (b1.id != id) {
-                    update_info.delete.push(b1);
+        prev_list.forEach(i1 => {
+            var exists = false;
+            overlap.forEach(i2 => {
+                if (i1.id == i2) {
+                    exists = true;
                 }
+            });
+            if (!exists) {
+                update_info.delete.push(i1);
             }
-        }
-        for (let b2 in current_list) {
-            for (let id in overlap) {
-                if (b2.id != id) {
-                    update_info.add.push(b2);
-                }
-            }
-        }
+        });
 
+        current_list.forEach(i1 => {
+            var exists = false;
+            overlap.forEach(i2 => {
+                if (i1.id == i2) {
+                    exists = true;
+                }
+            });
+            if (!exists) {
+                update_info.add.push(i1);
+            }
+        })
+
+        // for (const b1 of prev_list) {
+        //     for (const id of overlap) {
+        //         if (b1.id != id) {
+        //             console.log(b1);
+        //             update_info.delete.push(b1);
+        //         }
+        //     }
+        // }
+        // for (const b2 in current_list) {
+        //     for (const id in overlap) {
+        //         if (b2.id != id) {
+        //             console.log(b2);
+        //             update_info.add.push(b2);
+        //         }
+        //     }
+        // }
+        // console.log(update_info);
         return update_info;
     }
 }

@@ -192,10 +192,11 @@ app.get("/login.html", (req, res) => {
 
 io.on('connection', (socket) => {
     //socket.emit으로 현재 연결한 상대에게 신호를 보낼 수 있다.
-    debug(`IO: somebody entered`);
+    debug('IO: somebody entered');
 
     socket.on("enter", (user) => {
         // Assign user ID.
+        console.log("Oh.");
         const user_temp_id = users.assign();
         cache.setDefaultUserLocation(user_temp_id);
         const init_building_list = cache.getObjectList({x: 490, y: 490});
@@ -205,32 +206,34 @@ io.on('connection', (socket) => {
                 add: init_building_list,
                 delete: []
             }
-        }
+        };
         socket.emit("welcome", init_msg);
     
         user.id = user_temp_id;
 
-        const result = cache.get(user);
-        socket.emit("updateObjList", result);
-    })
-
-    socket.on("move", (msg) => {
-        // MEMO: 'msg' contains variable sent from client.
-        // In this case, msg is 'ObjectClass'. I would use..
-        // - ID of the user
-        // - position of the user (x, y)
-
-        debug(`move: ${msg.id} (${msg.pos.x},\t${msg.pos.y})`);
-
-        const result = cache.getDiff(msg);
-        
-        // Emit information to the user whom sent move information.
-        // Result contains two fields: {add: [], delete: []}
+        const result = cache.getDiff(user);
         socket.emit("updateObjList", result);
 
-        // Emit position to every client connected to the server.
-        // The clients will take care of movements.
-        io.emit('move', msg);
+        socket.on("move", (msg) => {
+            // MEMO: 'msg' contains variable sent from client.
+            // In this case, msg is 'ObjectClass'. I would use..
+            // - ID of the user
+            // - position of the user (x, y)
+    
+            console.log(`move: ${msg.id} (${msg.pos.x},${msg.pos.y})`);
+    
+            const result = cache.getDiff(msg);
+
+            console.log(result);
+            
+            // Emit information to the user whom sent move information.
+            // Result contains two fields: {add: [], delete: []}
+            socket.emit("updateObjList", result);
+    
+            // Emit position to every client connected to the server.
+            // The clients will take care of movements.
+            io.emit('move', msg);
+        });
     });
 });
 
