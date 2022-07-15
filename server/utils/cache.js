@@ -3,7 +3,7 @@ const Building = objects.BuildingObj;
 const Point = objects.Point;
 
 const path = require('path');
-const image_path = "../client/forest-of-kaist/public/images/"
+const image_path = "/images/"
 
 class Cache {
     constructor() {
@@ -14,7 +14,8 @@ class Cache {
         this.user_location = new Map();
 
         // This is temporary map data.
-        const img_path = path.join(__dirname, image_path + "building_center.png");
+        // const img_path = path.join(__dirname, image_path + "building_center.png");
+        const img_path = image_path + "building_center.png";
         this.map_data.push(new Building({width: 6, height: 6}, {x: 500, y: 500}, img_path, 1, "building_center"));
     }
 

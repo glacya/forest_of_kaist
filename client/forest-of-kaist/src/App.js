@@ -10,7 +10,7 @@ import { View } from './js/View';
 // import Building from './js/Building';
 import { ObjectFunc } from './js/Object';
 
-const address = "http://192.249.18.201";
+const address = "http://172.10.18.171";
 
 const socket = io.connect(address, {
   cors: { origin: '*' }

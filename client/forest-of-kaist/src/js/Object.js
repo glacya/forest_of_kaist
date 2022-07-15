@@ -7,7 +7,7 @@ import { user } from "./Character";
 import { view } from "./View";
 
 var objList = [];
-var currObjElemList = [];
+// var currObjElemList = [];
 
 const imgList = {
   down1: "/images/user_down_1.png",
@@ -40,7 +40,83 @@ function ObjectFunc() {
     setIsLoading(false);
   };
   
+  const [currObjElemList, setCurrObjElemList] = useState([]);
   
+  /*
+res == {
+  add: [ Object, Object, ... ], 
+  delete: [ Object.id, Object.id, ... ]
+}
+*/
+
+function updateObjList(res) {
+  // objList = objList.filter(obj => !(res.delete.includes(obj)));
+  console.log("res.add:");
+  console.log(res.add);
+  objList = objList.filter(obj => {
+    res.delete.forEach(id => {
+      if(id == obj.id) return false;
+    })
+    return true;
+  });
+  objList = objList.concat(res.add);
+  updateObjPxpos();
+}
+
+function updateObjPxpos() {
+  // const obj1 = React.createElement(
+  //   "img",
+  //   {
+  //     src: "/images/building_center.png",
+  //     alt: "Buildinggg", 
+  //     width: 500
+  //   }
+  // )
+  // const obj2 = React.createElement(
+  //   "img",
+  //   {
+  //     src: "/images/building_center.png",
+  //     alt: "Buildingggggggggg", 
+  //     width: 200
+  //   }
+  // )
+  // currObjElemList = [obj1, obj2];
+  var tempObjElemList = [];
+  // setCurrObjElemList([]);
+  console.log(`updateObjPxpos`);
+  console.log(objList);
+  console.log(`view.pos.x: ${view.pos.x}\nview.pos.y: ${view.pos.y}`);
+  objList.forEach(obj => {
+    if ( // if obj is inside the view
+      (view.pos.x < obj.pos.x + obj.size.width)   ||   // left
+      (view.pos.y < obj.pos.y + obj.size.height)  ||   // top
+      (view.pos.x + view.size.width < obj.pos.x)  ||   // right
+      (view.pos.y + view.size.height > obj.pos.y)      // bottom
+    ) {
+      console.log("obj: ");
+      console.log(obj);
+      tempObjElemList.push(React.createElement(
+        "img",
+        {
+          src: obj.img,
+          alt: obj.name, 
+          width: mapClass.unitToPx(obj.size.width),
+          height: mapClass.unitToPx(obj.size.height),
+          style: { position: "absolute", left: view.unitposToPxpos(obj.pos).x, top: view.unitposToPxpos(obj.pos).y}
+        }
+      ));
+      console.log("temp");
+      console.log(tempObjElemList);
+      setCurrObjElemList(tempObjElemList);
+    }
+  });
+}
+
+useEffect(() => {
+
+  console.log("currObjElemList: ");
+  console.log(currObjElemList);
+}, [currObjElemList]);
   
   const [userPosImg, setUserPosImg] = useState({
     pos: user.pos,
@@ -120,74 +196,14 @@ function ObjectFunc() {
       updateObjList(res.objList);
     });
     socket.on("updateObjList", (res) => updateObjList(res)); // TODO: change event name
-    console.log(currObjElemList);
   }, []);
   
   return (
     <div>
-      { isLoading ? "Loading image ..." : userElement }
       { currObjElemList }
+      { isLoading ? "Loading image ..." : userElement }
     </div>
   );
-}
-
-/*
-res == {
-  add: [ Object, Object, ... ], 
-  delete: [ Object.id, Object.id, ... ]
-}
-*/
-
-function updateObjList(res) {
-  // objList = objList.filter(obj => !(res.delete.includes(obj)));
-  console.log(res);
-  objList = objList.filter(obj => {
-    res.delete.forEach(id => {
-      if(id == obj.id) return false;
-    })
-    return true;
-  });
-  objList.concat(res.add);
-  updateObjPxpos();
-}
-
-function updateObjPxpos() {
-  // const obj1 = React.createElement(
-  //   "img",
-  //   {
-  //     src: "/images/building_center.png",
-  //     alt: "Buildinggg", 
-  //     width: 500
-  //   }
-  // )
-  // const obj2 = React.createElement(
-  //   "img",
-  //   {
-  //     src: "/images/building_center.png",
-  //     alt: "Buildingggggggggg", 
-  //     width: 200
-  //   }
-  // )
-  // currObjElemList = [obj1, obj2];
-  objList.forEach(obj => {
-    if ( // if obj is inside the view
-      (view.pos.x < obj.pos.x + obj.size.width)   ||   // left
-      (view.pos.y < obj.pos.y + obj.size.height)  ||   // top
-      (view.pos.x + view.size.width < obj.pos.x)  ||   // right
-      (view.pos.y + view.size.height > obj.pos.y)      // bottom
-    ) {
-      currObjElemList.push(React.createElement(
-        "img",
-        {
-          src: obj.img,
-          alt: obj.name, 
-          width: mapClass.unitToPx(obj.size.width),
-          height: mapClass.unitToPx(obj.size.height),
-          style: { position: "absolute", left: view.unitposToPxpos(obj.pos).x, top: view.unitposToPxpos(obj.pos).y}
-        }
-      ));
-    }
-  });
 }
 
 export { objList, ObjectFunc };
