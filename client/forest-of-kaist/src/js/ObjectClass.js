@@ -1,6 +1,5 @@
 import { mapClass } from "./Map";
-
-const objList = [];
+import { objList } from "./Object"
 
 class ObjectClass { 
   constructor(size, pos, img, user = false, id = null) {

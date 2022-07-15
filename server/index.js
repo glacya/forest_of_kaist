@@ -200,7 +200,7 @@ io.on('connection', (socket) => {
         // - ID of the user
         // - position of the user (x, y)
 
-        debug(`move: (${msg.x},\t${msg.y})`);
+        debug(`move: (${msg.pos.x},\t${msg.pos.y})`);
         // Emit position to every client connected to the server.
         // The clients will take care of movements.
         io.emit('move', msg);
