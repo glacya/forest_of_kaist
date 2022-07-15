@@ -1,9 +1,12 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { socket } from "../App";
 
 import { mapClass } from "./Map";
 import { user } from "./Character";
 import { view } from "./View";
+
+var objList = [];
+var currObjElemList = [];
 
 const imgList = {
   down1: "/images/user_down_1.png",
@@ -17,11 +20,6 @@ const imgList = {
 }
 
 function ObjectFunc() {
-  const [posImg, setPosImg] = useState({
-    pos: user.pos,
-    img: user.img.down1
-  });
-  
   // For cashing images
   const [isLoading, setIsLoading] = useState(true);
   useEffect(() => {
@@ -32,7 +30,6 @@ function ObjectFunc() {
     const promises = await srcArray.map((src) => {
       return new Promise(function (resolve, reject) {
         const img = new Image();
-        
         img.src = src;
         img.onload = resolve();
         img.onerror = reject();
@@ -42,11 +39,12 @@ function ObjectFunc() {
     setIsLoading(false);
   };
   
+  
+  
   const [userPosImg, setUserPosImg] = useState({
     pos: user.pos,
     img: user.img.down1
   });
-
   const [viewPos, setViewPos] = useState(view.pos);
   
   const handleKeyDown = (e) => {
@@ -87,10 +85,12 @@ function ObjectFunc() {
   useEffect(() => {
     user.setPos(userPosImg.pos);
     view.setPos(viewPos);
-    socket.emit("move", user.pos);
+    socket.emit("move", {
+      id: user.id,
+      pos: user.pos
+    });
     console.log(`user.pos: {x: ${user.pos.x}, y: ${user.pos.y}}`);
   }, [userPosImg]);
-    
   
   useEffect(() => {
     document.addEventListener('keydown', handleKeyDown);
@@ -98,52 +98,6 @@ function ObjectFunc() {
       document.removeEventListener('keydown', handleKeyDown);
     }
   }, []);
- 
-  // document.addEventListener('keydown', () => {
-  //   setImg(img == user.img.left1 ? user.img.left2 : user.img.left1);
-  // }); 
-  
-  // useEffect(() => {
-  //     function handleKeyDown(e) {
-  //         switch (e.keyCode) {
-  //           case 37: // Left
-  //               setPosImg((prev) => ({
-  //                 pos: user.left(prev.pos), 
-  //                 img: prev.img == user.img.left1 ? user.img.left2 : user.img.left1
-  //               }));
-  //             break;
-  //           case 38: // Up
-  //             setPosImg((prev) => ({
-  //               pos: user.up(prev.pos), 
-  //               img: prev.img == user.img.up1 ? user.img.up2 : user.img.up1
-  //             }));
-  //             break;
-  //           case 39: // Right
-  //             setPosImg((prev) => ({
-  //               pos: user.right(prev.pos), 
-  //               img: prev.img == user.img.right1 ? user.img.right2 : user.img.right1
-  //             }));
-  //             break;
-  //           case 40: // Down
-  //             setPosImg((prev) => ({
-  //               pos: user.down(prev.pos), 
-  //               img: prev.img == user.img.down1 ? user.img.down2 : user.img.down1
-  //             }));
-  //             break;
-  //           default:
-  //             console.log("not an arrow key!" + e.keyCode);
-  //         }
-  //         user.setPos(posImg.pos);
-  //         socket.emit("move", user.pos);
-  //         console.log(`character.pos: {x: ${user.pos.x}, y: ${user.pos.y}}`);
-  //       } 
-        
-  //   document.addEventListener('keydown', handleKeyDown);
-
-  //   return function cleanup() {
-  //     document.removeEventListener('keydown', handleKeyDown); 
-  //   }
-  // }, [posImg]);
   
   const userElement = React.createElement(
     "img",
@@ -156,52 +110,78 @@ function ObjectFunc() {
     }
   )
   
+  useEffect(() => {
+    socket.emit("enter", user);
+    console.log("Entered in the world!");
+    socket.on("welcome", (id) => user.setId(id)); // TODO: change event name
+    socket.on("updateObjList", (res) => updateObjList(res)); // TODO: change event name
+    console.log(currObjElemList);
+  }, []);
+  
   return (
-    <div>{ isLoading ? "Loading image ..." : userElement }</div>
-    // <div></div>
+    <div>
+      { isLoading ? "Loading image ..." : userElement }
+      { currObjElemList }
+    </div>
   );
 }
 
-export { ObjectFunc };
+/*
+res == {
+  add: [ Object, Object, ... ], 
+  delete: [ Object.id, Object.id, ... ]
+}
+*/
 
-// useEffect(() => {
-//   function handleKeyDown(e) {
-//     switch (e.keyCode) {
-//       case 37: // Left
-//         setPosImg((prev) => ({
-//           pos: character.left(prev.pos), 
-//           img: prev.img == character.img.left1 ? character.img.left2 : character.img.left1
-//         }));
-//         break;
-//       case 38: // Up
-//         setPosImg((prev) => ({
-//           pos: character.up(prev.pos), 
-//           img: prev.img == character.img.up1 ? character.img.up2 : character.img.up1
-//         }));
-//         break;
-//       case 39: // Right
-//         setPosImg((prev) => ({
-//           pos: character.right(prev.pos), 
-//           img: prev.img == character.img.right1  ? character.img.right2 : character.img.right1
-//         }));
-//         break;
-//       case 40: // Down
-//         setPosImg((prev) => ({
-//           pos: character.down(prev.pos), 
-//           img: prev.img == character.img.down1 ? character.img.down2 : character.img.down1
-//         }));
-//         break;
-//       default:
-//         console.log("not an arrow key!" + e.keyCode);
-//     }
-//     character.setPos(posImg.pos);
-//     socket.emit("move", character.pos);
-//     console.log(`character.pos: {x: ${character.pos.x}, y: ${character.pos.y}}`);
-//   } 
-  
-//   document.addEventListener('keydown', handleKeyDown);
+function updateObjList(res) {
+  // objList = objList.filter(obj => !(res.delete.includes(obj)));
+  objList = objList.filter(obj => {
+    res.delete.forEach(id => {
+      if(id == obj.id) return false;
+    })
+    return true;
+  });
+  objList.concat(res.add);
+  updateObjPxpos();
+}
 
-//   return function cleanup() {
-//     document.removeEventListener('keydown', handleKeyDown);
-//   }
-// }, [posImg]);
+function updateObjPxpos() {
+  // const obj1 = React.createElement(
+  //   "img",
+  //   {
+  //     src: "/images/building_center.png",
+  //     alt: "Buildinggg", 
+  //     width: 500
+  //   }
+  // )
+  // const obj2 = React.createElement(
+  //   "img",
+  //   {
+  //     src: "/images/building_center.png",
+  //     alt: "Buildingggggggggg", 
+  //     width: 200
+  //   }
+  // )
+  // currObjElemList = [obj1, obj2];
+  objList.forEach(obj => {
+    if ( // if obj is inside the view
+      (view.pos.x < obj.pos.x + obj.size.width)   ||   // left
+      (view.pos.y < obj.pos.y + obj.size.height)  ||   // top
+      (view.pos.x + view.size.width < obj.pos.x)  ||   // right
+      (view.pos.y + view.size.height > obj.pos.y)      // bottom
+    ) {
+      currObjElemList.push(React.createElement(
+        "img",
+        {
+          src: obj.img,
+          alt: obj.name, 
+          width: mapClass.unitToPx(obj.size.width),
+          height: mapClass.unitToPx(obj.size.height),
+          style: { position: "absolute", left: view.unitposToPxpos(obj.pos).x, top: view.unitposToPxpos(obj.pos).y}
+        }
+      ));
+    }
+  });
+}
+
+export { objList, ObjectFunc };

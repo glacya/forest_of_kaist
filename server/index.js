@@ -215,6 +215,8 @@ io.on('connection', (socket) => {
         debug("??");
         io.emit('server_msg', "ㅋㅋㅋ");
     });
+    
+    socket.on("enter", (msg) => console.log(msg));
 });
 
 server.listen(port, function() {
