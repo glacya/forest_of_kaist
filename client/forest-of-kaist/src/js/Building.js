@@ -12,7 +12,6 @@ class BuildingObj extends Obj {
     super(size, pos, img);
     this.name = name;
   }
-  
 }
 
 const building = new BuildingObj({width: 6, height: 6}, {x: 490, y: 490}, img, "Sample building");

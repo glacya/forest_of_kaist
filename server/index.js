@@ -3,6 +3,11 @@ const mysql_session = require('express-mysql-session');
 const app = require('express')();
 const path = require('path');
 const util = require('util');
+const objects = require('./utils/objects');
+const Cache = require('./utils/cache').Cache;
+const Point = objects.Point;
+const Building = objects.Building;
+const Users = require('./utils/user').Users;
 
 var cors = require('cors');
 
@@ -82,6 +87,9 @@ const verify = async(user_pw, user_salt, answer) => {
 
     return result === answer;
 }
+
+var cache = new Cache();
+var users = new Users();
 
 // TEMP CODE: set rendering option to EJS
 app.set('view engine', 'ejs');
@@ -182,38 +190,31 @@ app.get("/login.html", (req, res) => {
     }
 });
 
-
-// main game.
-// TODO: redirect to login page if not logged in.
-// TODO: deliver page to user.
-app.get("/game.js", (req, res) => {
-    debug("hi");
-})
-
 io.on('connection', (socket) => {
     //socket.emit으로 현재 연결한 상대에게 신호를 보낼 수 있다.
     debug(`IO: somebody entered`);
 
+    // Assign user ID.
+    const user_temp_id = users.assign();
+    socket.emit("assignId", user_temp_id);
+
     socket.on("move", (msg) => {
         // MEMO: 'msg' contains variable sent from client.
-        // In this case, msg would contain the followings:
+        // In this case, msg is 'ObjectClass'. I would use..
         // - ID of the user
         // - position of the user (x, y)
 
         debug(`move: (${msg.x},\t${msg.y})`);
+
+        const result = cache.get(msg);
+        
+        // Emit information to the user whom sent move information.
+        // Result contains two fields: {add: [], delete: []}
+        socket.emit("updateObjList", result);
+
         // Emit position to every client connected to the server.
         // The clients will take care of movements.
         io.emit('move', msg);
-    });
-
-    socket.on('enter_building', (msg) => {
-        // MEMO: do we really need to enter building?
-        debug('enter_building: 빌딩 들어감');
-    });
-
-    socket.on('client_msg', (msg) => {
-        debug("??");
-        io.emit('server_msg', "ㅋㅋㅋ");
     });
 });
 
