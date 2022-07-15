@@ -6,9 +6,6 @@ const util = require('util');
 
 var cors = require('cors');
 
-const passport = require('passport');
-const LocalStrategy = require('passport-local').Strategy;
-
 const crypto = require('crypto');
 
 const mysql = require('mysql');
@@ -42,9 +39,6 @@ const session_store = new mysql_session(mysql_info);
 
 const connection = mysql.createConnection(mysql_info);
 
-const ios = require('express-socket.io-session');
-io.use(ios(session, {autoSave: true}));
-
 app.use(cors());
 app.use(cookieParser());
 app.use(session({
@@ -59,36 +53,6 @@ app.use(session({
         maxAge: 60 * 60 * 1000      // 1 hours
     }
 }));
-app.use(passport.initialize());
-app.use(passport.session());
-
-passport.serializeUser((user, done)=>{
-    console.log('passport session save: ', user.id);
-    done(null, user.id);
-})
-
-passport.deserializeUser((id, done)=>{
-    console.log('passport session get id: ', id);
-    done(null, id);
-})
-
-passport.use('local', new LocalStrategy({
-    usernameField: 'id',
-    passwordField: 'pw',
-    passReqToCallback: true
-}, function(req, id, pw, done) {
-    if(id==process.env.LOGIN_ID && pw==process.env.LOGIN_PW){
-        const user={
-            id: id,
-            pw: pw
-        }
-        console.log("Login check succeeded.");
-        return done(null, user)
-    }
-    else
-        return done(null, false, {'message' : 'Incorrect email or password'})
-    }
-));
 
 const random_bytes_promise = util.promisify(crypto.randomBytes);
 const pbkdf2_promise = util.promisify(crypto.pbkdf2);
