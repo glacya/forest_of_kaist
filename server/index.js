@@ -214,13 +214,13 @@ io.on('connection', (socket) => {
         const result = cache.getDiff(user);
         socket.emit("updateObjList", result);
 
-        socket.on("move", (msg) => {
+        socket.on("updateUnit", (msg) => {
             // MEMO: 'msg' contains variable sent from client.
             // In this case, msg is 'ObjectClass'. I would use..
             // - ID of the user
             // - position of the user (x, y)
     
-            console.log(`move: ${msg.id} (${msg.pos.x},${msg.pos.y})`);
+            console.log(`updateUnit: ${msg.id} (${msg.pos.x},${msg.pos.y})`);
     
             const result = cache.getDiff(msg);
 
@@ -229,11 +229,13 @@ io.on('connection', (socket) => {
             // Emit information to the user whom sent move information.
             // Result contains two fields: {add: [], delete: []}
             socket.emit("updateObjList", result);
-    
+        });
+
+        socket.on("move", (msg) => {
             // Emit position to every client connected to the server.
             // The clients will take care of movements.
             io.emit('move', msg);
-        });
+        })
     });
 });
 
