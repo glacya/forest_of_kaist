@@ -3,7 +3,7 @@ const Building = objects.BuildingObj;
 const Point = objects.Point;
 
 const path = require('path');
-const image_path = "../client/forest-of-kaist/public/images/"
+const image_path = "../../client/forest-of-kaist/public/images/"
 
 class Cache {
     constructor() {
