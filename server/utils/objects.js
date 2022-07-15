@@ -6,10 +6,11 @@ class Point {
 }
 
 class ObjectClass { 
-    constructor(size, pos, img, user = false) {
+    constructor(size, pos, img, id, user = false) {
       this.size = { width: size.width, height: size.height };
       if (pos === "center") this.pos = this.getCenterPos();
       else this.pos = { x: pos.x, y: pos.y };
+      this.id = id;
       this.img = img;
       this.user = user;
     }
@@ -23,8 +24,8 @@ class ObjectClass {
 }
 
 class BuildingObj extends ObjectClass {
-    constructor(size, pos, img, name) {
-      super(size, pos, img);
+    constructor(size, pos, img, id, name) {
+      super(size, pos, img, id);
       this.name = name;
     }
 }

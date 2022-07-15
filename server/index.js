@@ -194,9 +194,25 @@ io.on('connection', (socket) => {
     //socket.emit으로 현재 연결한 상대에게 신호를 보낼 수 있다.
     debug(`IO: somebody entered`);
 
-    // Assign user ID.
-    const user_temp_id = users.assign();
-    socket.emit("assignId", user_temp_id);
+    socket.on("enter", (user) => {
+        // Assign user ID.
+        const user_temp_id = users.assign();
+        cache.setDefaultUserLocation(user_temp_id);
+        const init_building_list = cache.getObjectList({x: 490, y: 490});
+        const init_msg = {
+            id: user_temp_id,
+            objList: {
+                add: init_building_list,
+                delete: []
+            }
+        }
+        socket.emit("welcome", init_msg);
+    
+        user.id = user_temp_id;
+
+        const result = cache.get(user);
+        socket.emit("updateObjList", result);
+    })
 
     socket.on("move", (msg) => {
         // MEMO: 'msg' contains variable sent from client.
@@ -204,9 +220,9 @@ io.on('connection', (socket) => {
         // - ID of the user
         // - position of the user (x, y)
 
-        debug(`move: (${msg.x},\t${msg.y})`);
+        debug(`move: ${msg.id} (${msg.pos.x},\t${msg.pos.y})`);
 
-        const result = cache.get(msg);
+        const result = cache.getDiff(msg);
         
         // Emit information to the user whom sent move information.
         // Result contains two fields: {add: [], delete: []}

@@ -135,6 +135,7 @@ res == {
 
 function updateObjList(res) {
   // objList = objList.filter(obj => !(res.delete.includes(obj)));
+  console.log(res);
   objList = objList.filter(obj => {
     res.delete.forEach(id => {
       if(id == obj.id) return false;
