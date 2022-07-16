@@ -277,6 +277,8 @@ io.on('connection', (socket) => {
         console.log(socket.id);
     
         user.id = user_temp_id;
+        
+        io.emit("newUser", user);
 
         // Notify other users.
         io.emit("newUser", user);
@@ -313,7 +315,7 @@ io.on('connection', (socket) => {
             // The clients will take care of movements.
             users.updateLocation(user);
             io.emit("anotherUser", {
-                type: "add",
+                type: "add",        // TODO: can be type of add / move / delete
                 user: user
             });
         });
