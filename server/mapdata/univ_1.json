@@ -31,6 +31,22 @@
                 "id": 2,
                 "name": "building_cafeteria"
             }
+        },
+        {
+            "type": "building",
+            "data": {
+                "size": {
+                    "width": 6,
+                    "height": 6
+                },
+                "pos": {
+                    "x": 55,
+                    "y": 40
+                },
+                "img": "/images/building_classroom.png",
+                "id": 3,
+                "name": "building_classroom"
+            }
         }
     ]
 }
