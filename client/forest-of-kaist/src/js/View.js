@@ -24,6 +24,19 @@ class ViewClass{
       y: mapClass.unitToPx(unitpos.y - this.pos.y)
     };
   }
+
+  getZIdx(type){
+    switch(type){
+      case "tile":
+        return -1;
+      case "building":
+        return 0;
+      case "character":
+        return 0;
+      default:
+        return "error";
+    }
+  }
   
   pxposToUnitpos(pxpos) {
     return {
@@ -66,12 +79,10 @@ const view = new ViewClass({width: 20, height: 15}, "center");
   
 function View() {
     const divElement = React.createElement(
-      "img",
-      { src: null,
-        alt: "Dummy Img",
+      "div",
+      { 
         width: mapClass.unitToPx(view.size.width),
-        height: mapClass.unitToPx(view.size.height),
-        style: { backgroundColor: "purple" }
+        height: mapClass.unitToPx(view.size.height)
       }
     )
     return (divElement);

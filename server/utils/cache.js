@@ -1,8 +1,10 @@
 const objects = require('./objects');
 const Building = objects.BuildingObj;
+const Tile = objects.TileObj;
 const Point = objects.Point;
-
+const fs = require('fs');
 const path = require('path');
+
 const image_path = "/images/";
 const map_path = "../mapdata/";
 
@@ -16,17 +18,56 @@ class Cache {
 
         // This is temporary map data.
         // TODO: load map data from json file.
-        this.map_data.push(new Building({width: 6, height: 6}, {x: 500, y: 500}, image_path + "building_center.png", 1, "building_center"));
-        this.map_data.push(new Building({width: 4, height: 4}, {x: 490, y: 510}, image_path + "building_cafeteria.png", 2, "building_cafeteria"));
+        // this.map_data.push(new Building({width: 6, height: 6}, {x: 500, y: 500}, image_path + "building_center.png", 1, "building_center"));
+        // this.map_data.push(new Building({width: 4, height: 4}, {x: 490, y: 510}, image_path + "building_cafeteria.png", 2, "building_cafeteria"));
+        this.readMapData();
     }
 
+    // Read map data from json file.
+    // TODO: connect to DB to supply correct map to each user.
     readMapData() {
-        
+        fs.readFile(path.join(__dirname, map_path + "univ_1.json"), (error, data) => {
+            if (error) {
+                console.log(error.message);
+            }
+            else {
+                const file_data = data.toString();
+                const map_data = JSON.parse(file_data);
+
+                for (const object of map_data.objects) {
+                    switch (object.type) {
+                        case ("building"):
+                            const building = new Building(object.data.size, object.data.pos, object.data.img, object.data.id, object.data.name);
+                            this.map_data.push(building);
+                            break;
+                        default:
+                            break;
+                    }
+                }
+            }
+        });
+
+        fs.readFile(path.join(__dirname, map_path + "tile.json"), (error, data) => {
+            if (error) {
+                console.log(error.message);
+            }
+            else {
+                const file_data = data.toString();
+                const tile_data = JSON.parse(file_data);
+
+                for (const tile of tile_data.tiles) {
+                    const real_tile = new Tile(tile.size, tile.pos, tile.img, tile.id);
+                    this.map_data.push(real_tile);
+                }
+            }
+        });
+
+        console.log("Loading map data finished.");
     }
 
     setDefaultUserLocation(id) {
         // console.log("OK, default.");
-        this.user_location.set(id, {x: 490, y: 490});
+        this.user_location.set(id, {x: 50, y: 50});
     }
 
     // Get difference list, and update user information.
@@ -68,12 +109,12 @@ class Cache {
         const y = Math.floor(pos.y);
         const point_key = 1000 * x + y;
         const consult = this.map.get(point_key);
-        console.log(point_key);
+        // console.log(point_key);
 
         if (consult == undefined) {
             for (const object of this.map_data) {
-                if ((x > object.pos.x - 15 && x < object.pos.x + object.size.width + 15)
-                    && y > object.pos.y - 13 && y < object.pos.y + object.size.height + 13) {
+                if ((x > object.pos.x - 20 && x <= object.pos.x + object.size.width + 20)
+                    && y > object.pos.y - 15 && y <= object.pos.y + object.size.height + 15) {
                     object_list.push(object);
                 }
             }

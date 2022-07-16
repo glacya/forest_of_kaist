@@ -1,9 +1,4 @@
-// import React, { useEffect, useState }  from "react";
-
-// import { socket } from "../App";
 import ObjectClass from "./ObjectClass";
-// import { mapClass } from "./Map";
-// import { view } from "./View";
 
 const imgList = {
   down1: "/images/user_down_1.png",
@@ -17,8 +12,8 @@ const imgList = {
 }
 
 class CharacterObj extends ObjectClass {
-  constructor(size, pos, img, name, user) {
-    super(size, pos, img, user);
+  constructor(size, pos, img, name) {
+    super(size, pos, img, "character");
     this.name = name;
   }
   
@@ -54,50 +49,6 @@ class CharacterObj extends ObjectClass {
   }
 }
 
-const user = new CharacterObj({width: 2, height: 2}, "center", imgList, "nupjuk", true);
-
-// function Character() {
-//   const [posImg, setPosImg] = useState({
-//     pos: user.pos,
-//     img: user.img.down1
-//   });
-  
-//   // For cashing images
-//   const [isLoading, setIsLoading] = useState(true);
-//   useEffect(() => {
-//     const imgs = Object.values(imgList);
-//     cacheImages(imgs);
-//   }, []);
-//   const cacheImages = async (srcArray) => {
-//     const promises = await srcArray.map((src) => {
-//       return new Promise(function (resolve, reject) {
-//         const img = new Image();
-        
-//         img.src = src;
-//         img.onload = resolve();
-//         img.onerror = reject();
-//       });
-//     });
-//     await Promise.all(promises);
-//     setIsLoading(false);
-//   };
-  
-  
-//   const imgElement = React.createElement(
-//     "img",
-//     { 
-//       src: posImg.img,
-//       alt: character.name, 
-//       width: mapClass.unitToPx(character.size.width),
-//       height: mapClass.unitToPx(character.size.height),
-//       style: { position: "absolute", left: view.unitposToPxpos(posImg.pos).x, top: view.unitposToPxpos(posImg.pos).y}
-//     }
-//   )
-//   return (
-//     <div>
-//       { isLoading ? "Loading image ..." : imgElement }
-//     </div>
-//   );
-// }
+const user = new CharacterObj({width: 2, height: 2}, "center", imgList, "nupjuk");
 
 export { user };
