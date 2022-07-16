@@ -277,10 +277,9 @@ io.on('connection', (socket) => {
         console.log(socket.id);
     
         user.id = user_temp_id;
-        
-        io.emit("newUser", user);
 
         // Notify other users.
+        // This event causes message only.
         io.emit("newUser", user);
 
         const result = cache.getDiff(user);
@@ -292,6 +291,7 @@ io.on('connection', (socket) => {
             user: user
         });
         users.setSocket(user_temp_id, socket.id);
+        users.setUserInfo(user);
 
         socket.on("updateUnit", (msg) => {
             // MEMO: 'msg' contains variable sent from client.
@@ -299,11 +299,11 @@ io.on('connection', (socket) => {
             // - ID of the user
             // - position of the user (x, y)
     
-            console.log(`update: ${msg.id} (${msg.pos.x},${msg.pos.y})`);
+            console.log(`updateUnit: ${msg.id} (${msg.pos.x},${msg.pos.y})`);
     
             const result = cache.getDiff(msg);
 
-            console.log(result);
+            // console.log(result);
             
             // Emit information to the user whom sent move information.
             // Result contains two fields: {add: [], delete: []}
@@ -313,19 +313,19 @@ io.on('connection', (socket) => {
         socket.on("move", (user) => {
             // Emit position to every client connected to the server.
             // The clients will take care of movements.
-            users.updateLocation(user);
-            io.emit("anotherUser", {
-                type: "add",        // TODO: can be type of add / move / delete
-                user: user
+            users.setUserInfo(user);
+            const emit_list = users.updateNeighbors(user);
+
+            emit_list.forEach((item) => {
+                const socket_id = users.getSocket(item.user.id);
+                console.log(`User ${user.id} sends ${item.type} to User ${item.user.id}`);
+                io.to(socket_id).emit("anotherUser", item);
             });
         });
 
-        socket.on("anotherUser", (user) => {
-            
-        })
-
         socket.on("enter_building", (msg) => {
             // Access building. 
+            // TODO..
         });
     });
 });
