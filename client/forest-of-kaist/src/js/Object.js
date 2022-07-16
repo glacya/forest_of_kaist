@@ -33,7 +33,12 @@ function getNewCurrObjElemList() {
         alt: obj.name, 
         width: mapClass.unitToPx(obj.size.width),
         height: mapClass.unitToPx(obj.size.height),
-        style: { position: "absolute", left: view.unitposToPxpos(obj.pos).x, top: view.unitposToPxpos(obj.pos).y }
+        style: { 
+          position: "absolute", 
+          left: view.unitposToPxpos(obj.pos).x, 
+          top: view.unitposToPxpos(obj.pos).y,
+          zIndex: view.getZIdx(obj.type)
+        }
       }
     ));
   });
@@ -216,7 +221,12 @@ function updateObjList(res) { // called when user has moved over one unit; after
       alt: user.name, 
       width: mapClass.unitToPx(user.size.width),
       height: mapClass.unitToPx(user.size.height),
-      style: { position: "absolute", left: view.unitposToPxpos(user.pos).x, top: view.unitposToPxpos(user.pos).y}
+      style: { 
+        position: "absolute", 
+        left: view.unitposToPxpos(user.pos).x, 
+        top: view.unitposToPxpos(user.pos).y,
+        zIndex: view.getZIdx(user.type)
+      }
     }
   )
   

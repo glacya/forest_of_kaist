@@ -24,6 +24,19 @@ class ViewClass{
       y: mapClass.unitToPx(unitpos.y - this.pos.y)
     };
   }
+
+  getZIdx(type){
+    switch(type){
+      case "tile":
+        return -1;
+      case "building":
+        return 0;
+      case "character":
+        return 0;
+      default:
+        return "error";
+    }
+  }
   
   pxposToUnitpos(pxpos) {
     return {
