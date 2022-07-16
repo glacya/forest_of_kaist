@@ -267,19 +267,21 @@ io.on('connection', (socket) => {
         debug("User entered.");
         const user_temp_id = users.assign();
         cache.setDefaultUserLocation(user_temp_id);
-        const init_building_list = cache.getObjectList({x: 50, y: 50});
+        const init_object_list = cache.getObjectList({x: 50, y: 50});
         const init_msg = {
             id: user_temp_id,
             objList: {
-                add: init_building_list,
+                add: init_object_list,
                 delete: []
             }
         };
         socket.emit("welcome", init_msg);
+        console.log(init_object_list);
     
         user.id = user_temp_id;
 
         const result = cache.getDiff(user);
+        console.log(result);
         socket.emit("setObjList", result);
 
         socket.on("updateUnit", (msg) => {

@@ -67,7 +67,7 @@ class Cache {
 
     setDefaultUserLocation(id) {
         // console.log("OK, default.");
-        this.user_location.set(id, {x: 490, y: 490});
+        this.user_location.set(id, {x: 50, y: 50});
     }
 
     // Get difference list, and update user information.
@@ -113,8 +113,8 @@ class Cache {
 
         if (consult == undefined) {
             for (const object of this.map_data) {
-                if ((x > object.pos.x - 15 && x < object.pos.x + object.size.width + 15)
-                    && y > object.pos.y - 13 && y < object.pos.y + object.size.height + 13) {
+                if ((x > object.pos.x - 20 && x <= object.pos.x + object.size.width + 20)
+                    && y > object.pos.y - 15 && y <= object.pos.y + object.size.height + 15) {
                     object_list.push(object);
                 }
             }
