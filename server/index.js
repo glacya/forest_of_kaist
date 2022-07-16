@@ -277,12 +277,16 @@ io.on('connection', (socket) => {
         };
         socket.emit("welcome", init_msg);
         console.log(init_object_list);
+        
     
         user.id = user_temp_id;
+        
+        io.emit("newUser", user);
 
         const result = cache.getDiff(user);
         console.log(result);
         socket.emit("setObjList", result);
+        socket.broadcast.emit("anotherUser", { type: "add", user: user });
 
         socket.on("updateUnit", (msg) => {
             // MEMO: 'msg' contains variable sent from client.
@@ -301,10 +305,13 @@ io.on('connection', (socket) => {
             socket.emit("updateObjList", result);
         });
 
-        socket.on("move", (msg) => {
+        socket.on("move", (user) => {
             // Emit position to every client connected to the server.
             // The clients will take care of movements.
-            io.emit('move', msg);
+            io.emit('anotherUser', {
+                type: "add" || "move" || "delete",
+                user: user
+            });
         });
 
         socket.on("enter_building", (msg) => {

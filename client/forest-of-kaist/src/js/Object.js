@@ -20,7 +20,7 @@ const imgList = {
 }
 
 function getNewCurrObjElemList() {
-  console.log("getNewCurrObjElemList called");
+  // console.log("getNewCurrObjElemList called");
   var tempObjElemList = [];
   objList.forEach(obj => {
     tempObjElemList.push(React.createElement(
@@ -73,64 +73,80 @@ res == {
 }
 */
 
-function setObjList(res) { 
-  objList = res.add;
-  setCurrObjElemList(getNewCurrObjElemList());
-}
-
-function updateObjList(res) { // called when user has moved over one unit; after this function called, viewObjList, marginObjList, currObjElemList are up-to-dated.
-  objList = objList.filter(obj => {
-    var result = true;
-    res.delete.forEach(objj => {
-      if(objj.id === obj.id) {
-        result = false;
+  function updateAnotherUser(res) {
+    switch (res.type) {
+      case "add":
+        objList.push(res.user);
+        break;
+      case "move":
+        objList = objList.filter(obj => obj.id != user.id);
+        objList.push(res.user);
+        break;
+      case "delete":
+        objList = objList.filter(obj => obj.id != user.id);
+        break;
+      default:
+        console.log(`Error! res.type ${res.type} is neither add, move, nor delete!`);
         return;
-      }
-    })
-    return result;
-  });
-  objList = objList.concat(res.add);
-  
-  setCurrObjElemList(getNewCurrObjElemList());
-}
+    }
+    setCurrObjElemList(getNewCurrObjElemList());
+  }
 
+  function setObjList(res) {
+    objList = res.add.filter(obj => obj.id != user.id);
+    setCurrObjElemList(getNewCurrObjElemList());
+  }
 
-  const prevPos = user.pos;
+  function updateObjList(res) { // called when user has moved over one unit; after this function called, viewObjList, marginObjList, currObjElemList are up-to-dated.
+    objList = objList.filter(obj => {
+      var result = true;
+      res.delete.forEach(objj => {
+        if(objj.id === obj.id) {
+          result = false;
+          return;
+        }
+      })
+      return result;
+    });
+    objList = objList.concat(res.add);
+    
+    setCurrObjElemList(getNewCurrObjElemList());
+  }
+
   const [userPosImg, setUserPosImg] = useState({
     pos: user.pos,
-    img: user.img.down1
+    img: user.img
   });
-  const [viewPos, setViewPos] = useState(view.pos);
   
   const handleKeyDown = (e) => {
     switch (e.keyCode) {
       case 37: // Left
         setUserPosImg((prev) => ({
           pos: user.left(prev.pos), 
-          img: prev.img == user.img.left1 ? user.img.left2 : user.img.left1
+          img: prev.img == imgList.left1 ? imgList.left2 : imgList.left1
         }));
-        setViewPos((prev) => view.left(prev));
+        view.left();
         break;
       case 38: // Up
         setUserPosImg((prev) => ({
           pos: user.up(prev.pos), 
-          img: prev.img == user.img.up1 ? user.img.up2 : user.img.up1
+          img: prev.img == imgList.up1 ? imgList.up2 : imgList.up1
         }));
-        setViewPos((prev) => view.up(prev));
+        view.up();
         break;
       case 39: // Right
         setUserPosImg((prev) => ({
           pos: user.right(prev.pos), 
-          img: prev.img == user.img.right1 ? user.img.right2 : user.img.right1
+          img: prev.img == imgList.right1 ? imgList.right2 : imgList.right1
         }));
-        setViewPos((prev) => view.right(prev));
+        view.right();
         break;
       case 40: // Down
         setUserPosImg((prev) => ({
           pos: user.down(prev.pos), 
-          img: prev.img == user.img.down1 ? user.img.down2 : user.img.down1
+          img: prev.img == imgList.down1 ? imgList.down2 : imgList.down1
         }));
-        setViewPos((prev) => view.down(prev));
+        view.down();
         break;
       default:
     }
@@ -138,10 +154,26 @@ function updateObjList(res) { // called when user has moved over one unit; after
   
   useEffect(() => {
     user.setPos(userPosImg.pos);
-    socket.emit("move", {
-      id: user.id,
-      pos: user.pos
-    });
+    user.setImg(userPosImg.img);
+    setUserElement(
+      React.createElement(
+        "img",
+        { 
+          src: user.img,
+          alt: user.name, 
+          width: mapClass.unitToPx(user.size.width),
+          height: mapClass.unitToPx(user.size.height),
+          style: { 
+            position: "absolute", 
+            left: view.unitposToPxpos(user.pos).x, 
+            top: view.unitposToPxpos(user.pos).y,
+            zIndex: view.getZIdx(user.type)
+          }
+        }
+      )
+    );
+    setCurrObjElemList(getNewCurrObjElemList());
+    socket.emit("move", user);
     if (
       parseInt((userPosImg.pos.x * 10).toFixed(0)) % 10 == 0 ||
       parseInt((userPosImg.pos.y * 10).toFixed(0)) % 10 == 0
@@ -151,7 +183,7 @@ function updateObjList(res) { // called when user has moved over one unit; after
         pos: user.pos
       });
     }
-    console.log(`user.pos: (x: ${userPosImg.pos.x}, y: ${userPosImg.pos.y})`);
+    console.log(`user.pos: (x: ${user.pos.x}, y: ${user.pos.y})`);
   }, [userPosImg]);
   
   useEffect(() => {
@@ -161,21 +193,23 @@ function updateObjList(res) { // called when user has moved over one unit; after
     }
   }, []);
   
-  const userElement = React.createElement(
-    "img",
-    { 
-      src: userPosImg.img,
-      alt: user.name, 
-      width: mapClass.unitToPx(user.size.width),
-      height: mapClass.unitToPx(user.size.height),
-      style: { 
-        position: "absolute", 
-        left: view.unitposToPxpos(user.pos).x, 
-        top: view.unitposToPxpos(user.pos).y,
-        zIndex: view.getZIdx(user.type)
+  const [userElement, setUserElement] = useState(
+    React.createElement(
+      "img",
+      { 
+        src: user.img,
+        alt: user.name, 
+        width: mapClass.unitToPx(user.size.width),
+        height: mapClass.unitToPx(user.size.height),
+        style: { 
+          position: "absolute", 
+          left: view.unitposToPxpos(user.pos).x, 
+          top: view.unitposToPxpos(user.pos).y,
+          zIndex: view.getZIdx(user.type)
+        }
       }
-    }
-  )
+    )
+  );
   
   useEffect(() => {
     socket.emit("enter", user);
@@ -183,13 +217,22 @@ function updateObjList(res) { // called when user has moved over one unit; after
       user.setId(res.id);
       setObjList(res.objList);
     });
+    socket.on("newUser", (res) => {
+      if (res.id == user.id) return;
+      console.log(`New user with id ${res.id} has entered to the world!`);
+    });
     socket.on("updateObjList", (res) => updateObjList(res));
+    socket.on("move", (res) => {
+      if (res.id == user.id) return;
+      console.log(`user id ${res.id} has moved to (x: ${res.pos.x}, y: ${res.pos.y})`);
+    });
+    socket.on("anotherUser", (res) => updateAnotherUser(res));
   }, []);
   
-  useEffect(() => {
-    view.setPos(viewPos);
-    setCurrObjElemList(getNewCurrObjElemList());
-  }, [viewPos]);
+  // useEffect(() => {
+  //   view.setPos(viewPos);
+  //   setCurrObjElemList(getNewCurrObjElemList());
+  // }, [viewPos]);
   
   return (
     <div>

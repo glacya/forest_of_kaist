@@ -45,28 +45,28 @@ class ViewClass{
     };
   }
 
-  left(pos) {
-    return {
-      x: parseFloat((pos.x - user.speed).toFixed(1)),
-      y: pos.y
+  left() {
+    this.pos = {
+      x: parseFloat((this.pos.x - user.speed).toFixed(1)),
+      y: this.pos.y
     };
   }
-  right(pos) {
-    return {
-      x: parseFloat((pos.x + user.speed).toFixed(1)),
-      y: pos.y
+  right() {
+    this.pos = {
+      x: parseFloat((this.pos.x + user.speed).toFixed(1)),
+      y: this.pos.y
     };
   }
-  up(pos) {
-    return {
-      x: pos.x,
-      y: parseFloat((pos.y - user.speed).toFixed(1))
+  up() {
+    this.pos = {
+      x: this.pos.x,
+      y: parseFloat((this.pos.y - user.speed).toFixed(1))
     };
   }
-  down(pos) {
-    return {
-      x: pos.x,
-      y: parseFloat((pos.y + user.speed).toFixed(1))
+  down() {
+    this.pos = {
+      x: this.pos.x,
+      y: parseFloat((this.pos.y + user.speed).toFixed(1))
     };
   }
   
