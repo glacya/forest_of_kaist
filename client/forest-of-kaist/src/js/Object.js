@@ -21,6 +21,25 @@ const imgList = {
   right2: "/images/user_right_2.png"
 }
 
+function getNewCurrObjElemList() {
+  var tempObjElemList = [];
+  viewObjList.forEach(obj => {
+    tempObjElemList.push(React.createElement(
+      "img",
+      {
+        key: obj.id,
+        id: obj.id,
+        src: obj.img,
+        alt: obj.name, 
+        width: mapClass.unitToPx(obj.size.width),
+        height: mapClass.unitToPx(obj.size.height),
+        style: { position: "absolute", left: view.unitposToPxpos(obj.pos).x, top: view.unitposToPxpos(obj.pos).y }
+      }
+    ));
+  });
+  return tempObjElemList;
+}
+
 function ObjectFunc() {
   // For cashing images
   const [isLoading, setIsLoading] = useState(true);
@@ -57,11 +76,12 @@ function setObjList(res) {
   var newMarginObjList = [];
    
   res.add.forEach(obj => {
+    // console.log(`view.pos: (x: ${view.pos.x} y: ${view.pos.y}) \nview.size: (width: ${view.size.width}, height: ${view.size.height}) \nobj.pos: (x: ${obj.pos.x}, y: ${obj.pos.y}) \nobj.size: (width: ${obj.size.width}, height: ${obj.size.height})`);
     if (
       (view.pos.x < obj.pos.x + obj.size.width)   &&   // left
       (view.pos.y < obj.pos.y + obj.size.height)  &&   // top
       (view.pos.x + view.size.width < obj.pos.x)  &&   // right
-      (view.pos.y + view.size.height > obj.pos.y)      // bottom
+      (view.pos.y + view.size.height < obj.pos.y)      // bottom
     ) {
       newViewObjList.push(obj);
     }
@@ -71,27 +91,13 @@ function setObjList(res) {
   viewObjList = newViewObjList;
   marginObjList = newMarginObjList;
   
-  var tempObjElemList = [];
-  viewObjList.forEach(obj => {
-    tempObjElemList.push(React.createElement(
-      "img",
-      {
-        id: obj.id,
-        src: obj.img,
-        alt: obj.name, 
-        width: mapClass.unitToPx(obj.size.width),
-        height: mapClass.unitToPx(obj.size.height),
-        style: { position: "absolute", left: view.unitposToPxpos(obj.pos).x, top: view.unitposToPxpos(obj.pos).y}
-      }
-    ));
-  });
-  setCurrObjElemList(prev => tempObjElemList);
+  setCurrObjElemList(getNewCurrObjElemList());
 }
 
 function updateObjList(res) { // called when user has moved over one unit; after this function called, viewObjList, marginObjList, currObjElemList are up-to-dated.
   // objList = objList.filter(obj => !(res.delete.includes(obj)));
-  console.log("res.add:");
-  console.log(res.add);
+  console.log("updateObjList called; res:");
+  console.log(res);
   marginObjList = marginObjList.filter(obj => {
     res.delete.forEach(id => {
       if(id == obj.id) return false;
@@ -112,7 +118,7 @@ function updateObjList(res) { // called when user has moved over one unit; after
       (view.pos.x < obj.pos.x + obj.size.width)   &&   // left
       (view.pos.y < obj.pos.y + obj.size.height)  &&   // top
       (view.pos.x + view.size.width < obj.pos.x)  &&   // right
-      (view.pos.y + view.size.height > obj.pos.y)      // bottom
+      (view.pos.y + view.size.height < obj.pos.y)      // bottom
     ) newViewObjList.push(obj);
     else {
       newMarginObjList.push(obj);
@@ -123,7 +129,6 @@ function updateObjList(res) { // called when user has moved over one unit; after
     console.log(`margobj: obj`);
     console.log(obj);
     if (
-      true ||
       (view.pos.x < obj.pos.x + obj.size.width)   &&   // left
       (view.pos.y < obj.pos.y + obj.size.height)  &&   // top
       (view.pos.x + view.size.width < obj.pos.x)  &&   // right
@@ -142,49 +147,9 @@ function updateObjList(res) { // called when user has moved over one unit; after
   console.log("finmarginObjList:");
   console.log(marginObjList);
   
-  var tempObjElemList = [];
-  viewObjList.forEach(obj => {
-    tempObjElemList.push(React.createElement(
-      "img",
-      {
-        id: obj.id,
-        src: obj.img,
-        alt: obj.name, 
-        width: mapClass.unitToPx(obj.size.width),
-        height: mapClass.unitToPx(obj.size.height),
-        style: { position: "absolute", left: view.unitposToPxpos(obj.pos).x, top: view.unitposToPxpos(obj.pos).y}
-      }
-    ));
-  });
-  setCurrObjElemList(prev => tempObjElemList);
+  setCurrObjElemList(getNewCurrObjElemList());
 }
 
-function updateObjPxpos() {
-  // const obj1 = React.createElement(
-  //   "img",
-  //   {
-  //     src: "/images/building_center.png",
-  //     alt: "Buildinggg", 
-  //     width: 500
-  //   }
-  // )
-  // const obj2 = React.createElement(
-  //   "img",
-  //   {
-  //     src: "/images/building_center.png",
-  //     alt: "Buildingggggggggg", 
-  //     width: 200
-  //   }
-  // )
-  // currObjElemList = [obj1, obj2];
-  
-}
-
-// useEffect(() => {
-
-//   console.log("currObjElemList: ");
-//   console.log(currObjElemList);
-// }, [currObjElemList]);
 
   const prevPos = user.pos;
   const [userPosImg, setUserPosImg] = useState({
@@ -230,12 +195,10 @@ function updateObjPxpos() {
   
   useEffect(() => {
     user.setPos(userPosImg.pos);
-    view.setPos(viewPos);
     socket.emit("move", {
       id: user.id,
       pos: user.pos
     });
-    updateObjPxpos();
     if (
       Math.floor(prevPos.x) != Math.floor(userPosImg.pos.x) ||
       Math.floor(prevPos.y) != Math.floor(userPosImg.pos.y)
@@ -245,7 +208,7 @@ function updateObjPxpos() {
         pos: user.pos
       });
     }
-    // console.log(`user.pos: {x: ${user.pos.x}, y: ${user.pos.y}}`);
+    console.log(`user.pos:  (x: ${userPosImg.pos.x}, y: ${userPosImg.pos.y})`);
   }, [userPosImg]);
   
   useEffect(() => {
@@ -281,6 +244,13 @@ function updateObjPxpos() {
     });
     socket.on("updateObjList", (res) => updateObjList(res));
   }, []);
+  
+  useEffect(() => {
+    view.setPos(viewPos);
+    console.log("viewPos:");
+    console.log(viewPos);
+    setCurrObjElemList(getNewCurrObjElemList());
+  }, [viewPos]);
   
   return (
     <div>

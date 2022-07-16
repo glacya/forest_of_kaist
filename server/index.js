@@ -212,7 +212,7 @@ io.on('connection', (socket) => {
         user.id = user_temp_id;
 
         const result = cache.getDiff(user);
-        socket.emit("updateObjList", result);
+        socket.emit("setObjList", result);
 
         socket.on("updateUnit", (msg) => {
             // MEMO: 'msg' contains variable sent from client.
