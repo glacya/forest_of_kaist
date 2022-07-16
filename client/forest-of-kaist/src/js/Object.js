@@ -6,7 +6,8 @@ import { mapClass } from "./Map";
 import { user } from "./Character";
 import { view } from "./View";
 
-var objList = [];
+var viewObjList = [];
+var marginObjList = [];
 // var currObjElemList = [];
 
 const imgList = {
@@ -18,6 +19,25 @@ const imgList = {
   up2: "/images/user_up_2.png",
   right1: "/images/user_right_1.png",
   right2: "/images/user_right_2.png"
+}
+
+function getNewCurrObjElemList() {
+  var tempObjElemList = [];
+  viewObjList.forEach(obj => {
+    tempObjElemList.push(React.createElement(
+      "img",
+      {
+        key: obj.id,
+        id: obj.id,
+        src: obj.img,
+        alt: obj.name, 
+        width: mapClass.unitToPx(obj.size.width),
+        height: mapClass.unitToPx(obj.size.height),
+        style: { position: "absolute", left: view.unitposToPxpos(obj.pos).x, top: view.unitposToPxpos(obj.pos).y }
+      }
+    ));
+  });
+  return tempObjElemList;
 }
 
 function ObjectFunc() {
@@ -49,75 +69,89 @@ res == {
 }
 */
 
-function updateObjList(res) {
+function setObjList(res) { 
+  console.log("QJNWEKJ");
+  console.log(res);
+  var newViewObjList = [];
+  var newMarginObjList = [];
+   
+  res.add.forEach(obj => {
+    // console.log(`view.pos: (x: ${view.pos.x} y: ${view.pos.y}) \nview.size: (width: ${view.size.width}, height: ${view.size.height}) \nobj.pos: (x: ${obj.pos.x}, y: ${obj.pos.y}) \nobj.size: (width: ${obj.size.width}, height: ${obj.size.height})`);
+    if (
+      (view.pos.x < obj.pos.x + obj.size.width)   &&   // left
+      (view.pos.y < obj.pos.y + obj.size.height)  &&   // top
+      (view.pos.x + view.size.width < obj.pos.x)  &&   // right
+      (view.pos.y + view.size.height < obj.pos.y)      // bottom
+    ) {
+      newViewObjList.push(obj);
+    }
+    else newMarginObjList.push(obj);
+  });
+  
+  viewObjList = newViewObjList;
+  marginObjList = newMarginObjList;
+  
+  setCurrObjElemList(getNewCurrObjElemList());
+}
+
+function updateObjList(res) { // called when user has moved over one unit; after this function called, viewObjList, marginObjList, currObjElemList are up-to-dated.
   // objList = objList.filter(obj => !(res.delete.includes(obj)));
-  console.log("res.add:");
-  console.log(res.add);
-  objList = objList.filter(obj => {
+  console.log("updateObjList called; res:");
+  console.log(res);
+  marginObjList = marginObjList.filter(obj => {
     res.delete.forEach(id => {
       if(id == obj.id) return false;
     })
     return true;
   });
-  objList = objList.concat(res.add);
-  updateObjPxpos();
-}
-
-function updateObjPxpos() {
-  // const obj1 = React.createElement(
-  //   "img",
-  //   {
-  //     src: "/images/building_center.png",
-  //     alt: "Buildinggg", 
-  //     width: 500
-  //   }
-  // )
-  // const obj2 = React.createElement(
-  //   "img",
-  //   {
-  //     src: "/images/building_center.png",
-  //     alt: "Buildingggggggggg", 
-  //     width: 200
-  //   }
-  // )
-  // currObjElemList = [obj1, obj2];
-  var tempObjElemList = [];
-  // setCurrObjElemList([]);
-  console.log(`updateObjPxpos`);
-  console.log(objList);
-  console.log(`view.pos.x: ${view.pos.x}\nview.pos.y: ${view.pos.y}`);
-  objList.forEach(obj => {
-    if ( // if obj is inside the view
-      (view.pos.x < obj.pos.x + obj.size.width)   ||   // left
-      (view.pos.y < obj.pos.y + obj.size.height)  ||   // top
-      (view.pos.x + view.size.width < obj.pos.x)  ||   // right
+  marginObjList = marginObjList.concat(res.add);
+  
+  console.log("marginObjList:");
+  console.log(marginObjList);
+  
+  var newViewObjList = [];
+  var newMarginObjList = [];
+  viewObjList.forEach(obj => {
+    console.log(`view obj: obj`);
+    console.log(obj);
+    if (
+      (view.pos.x < obj.pos.x + obj.size.width)   &&   // left
+      (view.pos.y < obj.pos.y + obj.size.height)  &&   // top
+      (view.pos.x + view.size.width < obj.pos.x)  &&   // right
+      (view.pos.y + view.size.height < obj.pos.y)      // bottom
+    ) newViewObjList.push(obj);
+    else {
+      newMarginObjList.push(obj);
+    }
+  })
+  
+  marginObjList.forEach(obj => {
+    console.log(`margobj: obj`);
+    console.log(obj);
+    if (
+      (view.pos.x < obj.pos.x + obj.size.width)   &&   // left
+      (view.pos.y < obj.pos.y + obj.size.height)  &&   // top
+      (view.pos.x + view.size.width < obj.pos.x)  &&   // right
       (view.pos.y + view.size.height > obj.pos.y)      // bottom
     ) {
-      console.log("obj: ");
-      console.log(obj);
-      tempObjElemList.push(React.createElement(
-        "img",
-        {
-          src: obj.img,
-          alt: obj.name, 
-          width: mapClass.unitToPx(obj.size.width),
-          height: mapClass.unitToPx(obj.size.height),
-          style: { position: "absolute", left: view.unitposToPxpos(obj.pos).x, top: view.unitposToPxpos(obj.pos).y}
-        }
-      ));
-      console.log("temp");
-      console.log(tempObjElemList);
-      setCurrObjElemList(tempObjElemList);
+      newViewObjList.push(obj);
     }
+    else newMarginObjList.push(obj);
   });
+  viewObjList = newViewObjList;
+  marginObjList = newMarginObjList;
+  
+  console.log("finviewObjList:");
+  console.log(viewObjList);
+  
+  console.log("finmarginObjList:");
+  console.log(marginObjList);
+  
+  setCurrObjElemList(getNewCurrObjElemList());
 }
 
-useEffect(() => {
 
-  console.log("currObjElemList: ");
-  console.log(currObjElemList);
-}, [currObjElemList]);
-  
+  const prevPos = user.pos;
   const [userPosImg, setUserPosImg] = useState({
     pos: user.pos,
     img: user.img.down1
@@ -155,18 +189,26 @@ useEffect(() => {
         setViewPos((prev) => view.down(prev));
         break;
       default:
-        console.log("not an arrow key!" + e.keyCode);
+        // console.log("not an arrow key!" + e.keyCode);
     }
   };
   
   useEffect(() => {
     user.setPos(userPosImg.pos);
-    view.setPos(viewPos);
     socket.emit("move", {
       id: user.id,
       pos: user.pos
     });
-    console.log(`user.pos: {x: ${user.pos.x}, y: ${user.pos.y}}`);
+    if (
+      Math.floor(prevPos.x) != Math.floor(userPosImg.pos.x) ||
+      Math.floor(prevPos.y) != Math.floor(userPosImg.pos.y)
+    ) {
+      socket.emit("updateUnit", {
+        id: user.id,
+        pos: user.pos
+      });
+    }
+    console.log(`user.pos:  (x: ${userPosImg.pos.x}, y: ${userPosImg.pos.y})`);
   }, [userPosImg]);
   
   useEffect(() => {
@@ -188,15 +230,27 @@ useEffect(() => {
   )
   
   useEffect(() => {
+    console.log("updated:");
+    console.log(currObjElemList);
+  }, [currObjElemList]);
+  
+  useEffect(() => {
     socket.emit("enter", user);
-    console.log("Entered in the world!");
-    console.log(`id: ${Cookies.get('id')}`);
+    // console.log("Entered in the world!");
+    // console.log(`id: ${Cookies.get('id')}`);
     socket.on("welcome", (res) => {
       user.setId(res.id);
-      updateObjList(res.objList);
+      setObjList(res.objList);
     });
-    socket.on("updateObjList", (res) => updateObjList(res)); // TODO: change event name
+    socket.on("updateObjList", (res) => updateObjList(res));
   }, []);
+  
+  useEffect(() => {
+    view.setPos(viewPos);
+    console.log("viewPos:");
+    console.log(viewPos);
+    setCurrObjElemList(getNewCurrObjElemList());
+  }, [viewPos]);
   
   return (
     <div>
@@ -206,4 +260,4 @@ useEffect(() => {
   );
 }
 
-export { objList, ObjectFunc };
+export { ObjectFunc };

@@ -10,7 +10,7 @@ import { View } from './js/View';
 // import Building from './js/Building';
 import { ObjectFunc } from './js/Object';
 
-const address = "http://172.10.18.171";
+const address = "http://192.249.18.201";
 
 const socket = io.connect(address, {
   cors: { origin: '*' }
@@ -18,7 +18,7 @@ const socket = io.connect(address, {
 
 function App() {
   const userId = Cookies.get('id');
-  console.log(`userId: ${userId}`);
+  // console.log(`userId: ${userId}`);
   return (
     // <RenderInWindow>
     <div>
