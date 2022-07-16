@@ -49,12 +49,12 @@ class Users {
     
     // Compute if target is located near source.
     isNeighbor(target, source) {
-        console.log(`   isNeighbor: ${target.id}, ${source.id}`);
-        console.log(`       target: ${target.pos.x}, ${target.pos.y}, ${target.size.width}, ${target.size.height}`);
-        console.log(`       source: ${source.pos.x}, ${source.pos.y}, ${source.size.width}, ${source.size.height}`);
+        // console.log(`   isNeighbor: ${target.id}, ${source.id}`);
+        // console.log(`       target: ${target.pos.x}, ${target.pos.y}, ${target.size.width}, ${target.size.height}`);
+        // console.log(`       source: ${source.pos.x}, ${source.pos.y}, ${source.size.width}, ${source.size.height}`);
 
         if (target.id == source.id) {
-            console.log("same id~");
+            // console.log("same id~");
             return false;
         }
 
@@ -73,7 +73,7 @@ class Users {
         const v4 = (source_y + source_height > target_y - 15);
 
         // console.log(`       ${source.pos.x}, ${target.pos.x + target.size.width + 20}`);
-        console.log(`       Boolean is.. ${v1}, ${v2}, ${v3}, ${v4}`);
+        // console.log(`       Boolean is.. ${v1}, ${v2}, ${v3}, ${v4}`);
 
         const value = v1 && v2 && v3 && v4;
 

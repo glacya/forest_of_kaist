@@ -246,7 +246,6 @@ app.post("/login", (req, res) => {
                     debug("There is no such user, or password is incorrect.");
                     res.status(400).send("There is no such user, or password is incorrect.");
                 }
-                
             }
         });
     }
