@@ -267,7 +267,7 @@ io.on('connection', (socket) => {
         debug("User entered.");
         const user_temp_id = users.assign();
         cache.setDefaultUserLocation(user_temp_id);
-        const init_object_list = cache.getObjectList({x: 50, y: 50});
+        const init_object_list = cache.getObjectList({x: 49, y: 49});
         const init_msg = {
             id: user_temp_id,
             objList: {
@@ -305,7 +305,13 @@ io.on('connection', (socket) => {
             // Emit position to every client connected to the server.
             // The clients will take care of movements.
             io.emit('move', msg);
-        })
+        });
+
+        socket.on("enter_building", (msg) => {
+            // Access building. 
+        });
+
+        socket.on
     });
 });
 
