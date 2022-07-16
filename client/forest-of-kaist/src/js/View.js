@@ -58,7 +58,7 @@ class ViewClass{
   }
   
   setPos(pos) {
-    this.pos = { x: pos.x.toFixed(1), y: pos.y.toFixed(1) };
+    this.pos = { x: parseFloat(pos.x.toFixed(1)), y: parseFloat(pos.y.toFixed(1)) };
   }
 }
 

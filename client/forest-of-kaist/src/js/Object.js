@@ -70,18 +70,17 @@ res == {
 */
 
 function setObjList(res) { 
-  console.log("QJNWEKJ");
+  console.log("setObjList res:");
   console.log(res);
   var newViewObjList = [];
   var newMarginObjList = [];
    
   res.add.forEach(obj => {
-    // console.log(`view.pos: (x: ${view.pos.x} y: ${view.pos.y}) \nview.size: (width: ${view.size.width}, height: ${view.size.height}) \nobj.pos: (x: ${obj.pos.x}, y: ${obj.pos.y}) \nobj.size: (width: ${obj.size.width}, height: ${obj.size.height})`);
     if (
       (view.pos.x < obj.pos.x + obj.size.width)   &&   // left
       (view.pos.y < obj.pos.y + obj.size.height)  &&   // top
-      (view.pos.x + view.size.width < obj.pos.x)  &&   // right
-      (view.pos.y + view.size.height < obj.pos.y)      // bottom
+      (view.pos.x + view.size.width > obj.pos.x)  &&   // right
+      (view.pos.y + view.size.height > obj.pos.y)      // bottom
     ) {
       newViewObjList.push(obj);
     }
@@ -96,29 +95,26 @@ function setObjList(res) {
 
 function updateObjList(res) { // called when user has moved over one unit; after this function called, viewObjList, marginObjList, currObjElemList are up-to-dated.
   // objList = objList.filter(obj => !(res.delete.includes(obj)));
-  console.log("updateObjList called; res:");
-  console.log(res);
   marginObjList = marginObjList.filter(obj => {
-    res.delete.forEach(id => {
-      if(id == obj.id) return false;
+    var result = true;
+    res.delete.forEach(objj => {
+      if(objj.id === obj.id) {
+        result = false;
+        return;
+      }
     })
-    return true;
+    return result;
   });
   marginObjList = marginObjList.concat(res.add);
-  
-  console.log("marginObjList:");
-  console.log(marginObjList);
   
   var newViewObjList = [];
   var newMarginObjList = [];
   viewObjList.forEach(obj => {
-    console.log(`view obj: obj`);
-    console.log(obj);
     if (
       (view.pos.x < obj.pos.x + obj.size.width)   &&   // left
       (view.pos.y < obj.pos.y + obj.size.height)  &&   // top
-      (view.pos.x + view.size.width < obj.pos.x)  &&   // right
-      (view.pos.y + view.size.height < obj.pos.y)      // bottom
+      (view.pos.x + view.size.width > obj.pos.x)  &&   // right
+      (view.pos.y + view.size.height > obj.pos.y)      // bottom
     ) newViewObjList.push(obj);
     else {
       newMarginObjList.push(obj);
@@ -126,12 +122,10 @@ function updateObjList(res) { // called when user has moved over one unit; after
   })
   
   marginObjList.forEach(obj => {
-    console.log(`margobj: obj`);
-    console.log(obj);
     if (
       (view.pos.x < obj.pos.x + obj.size.width)   &&   // left
       (view.pos.y < obj.pos.y + obj.size.height)  &&   // top
-      (view.pos.x + view.size.width < obj.pos.x)  &&   // right
+      (view.pos.x + view.size.width > obj.pos.x)  &&   // right
       (view.pos.y + view.size.height > obj.pos.y)      // bottom
     ) {
       newViewObjList.push(obj);
@@ -141,10 +135,8 @@ function updateObjList(res) { // called when user has moved over one unit; after
   viewObjList = newViewObjList;
   marginObjList = newMarginObjList;
   
-  console.log("finviewObjList:");
+  console.log("viewObjList and marginObjList");
   console.log(viewObjList);
-  
-  console.log("finmarginObjList:");
   console.log(marginObjList);
   
   setCurrObjElemList(getNewCurrObjElemList());
@@ -189,7 +181,6 @@ function updateObjList(res) { // called when user has moved over one unit; after
         setViewPos((prev) => view.down(prev));
         break;
       default:
-        // console.log("not an arrow key!" + e.keyCode);
     }
   };
   
@@ -208,7 +199,7 @@ function updateObjList(res) { // called when user has moved over one unit; after
         pos: user.pos
       });
     }
-    console.log(`user.pos:  (x: ${userPosImg.pos.x}, y: ${userPosImg.pos.y})`);
+    console.log(`user.pos: (x: ${userPosImg.pos.x}, y: ${userPosImg.pos.y})`);
   }, [userPosImg]);
   
   useEffect(() => {
@@ -230,14 +221,7 @@ function updateObjList(res) { // called when user has moved over one unit; after
   )
   
   useEffect(() => {
-    console.log("updated:");
-    console.log(currObjElemList);
-  }, [currObjElemList]);
-  
-  useEffect(() => {
     socket.emit("enter", user);
-    // console.log("Entered in the world!");
-    // console.log(`id: ${Cookies.get('id')}`);
     socket.on("welcome", (res) => {
       user.setId(res.id);
       setObjList(res.objList);
@@ -247,8 +231,6 @@ function updateObjList(res) { // called when user has moved over one unit; after
   
   useEffect(() => {
     view.setPos(viewPos);
-    console.log("viewPos:");
-    console.log(viewPos);
     setCurrObjElemList(getNewCurrObjElemList());
   }, [viewPos]);
   
