@@ -99,7 +99,6 @@ function setObjList(res) {
 }
 
 function updateObjList(res) { // called when user has moved over one unit; after this function called, viewObjList, marginObjList, currObjElemList are up-to-dated.
-  // objList = objList.filter(obj => !(res.delete.includes(obj)));
   marginObjList = marginObjList.filter(obj => {
     var result = true;
     res.delete.forEach(objj => {

@@ -17,7 +17,7 @@ class MapClass {
   }
 }
 
-const mapClass = new MapClass({ width: 1000, height: 1000 });
+const mapClass = new MapClass({ width: 100, height: 100 });
 
 function Map() {
     // const size = { width: 1000, height: 1000 };

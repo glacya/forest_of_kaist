@@ -79,12 +79,10 @@ const view = new ViewClass({width: 20, height: 15}, {x: 40, y: 42.5});
   
 function View() {
     const divElement = React.createElement(
-      "img",
-      { src: null,
-        alt: "Dummy Img",
+      "div",
+      { 
         width: mapClass.unitToPx(view.size.width),
-        height: mapClass.unitToPx(view.size.height),
-        style: { backgroundColor: "purple" }
+        height: mapClass.unitToPx(view.size.height)
       }
     )
     return (divElement);
