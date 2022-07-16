@@ -22,7 +22,7 @@ function App() {
   const frame = React.createElement(
     "img",
     { 
-      src: "/images/frame_dev.png",
+      src: "/images/frame.png",
       alt: "Frame", 
       style: { 
         position: "absolute",

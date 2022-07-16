@@ -6,9 +6,7 @@ import { mapClass } from "./Map";
 import { user } from "./Character";
 import { view } from "./View";
 
-var viewObjList = [];
-var marginObjList = [];
-// var currObjElemList = [];
+var objList = [];
 
 const imgList = {
   down1: "/images/user_down_1.png",
@@ -22,8 +20,9 @@ const imgList = {
 }
 
 function getNewCurrObjElemList() {
+  console.log("getNewCurrObjElemList called");
   var tempObjElemList = [];
-  viewObjList.forEach(obj => {
+  objList.forEach(obj => {
     tempObjElemList.push(React.createElement(
       "img",
       {
@@ -75,31 +74,12 @@ res == {
 */
 
 function setObjList(res) { 
-  console.log("setObjList res:");
-  console.log(res);
-  var newViewObjList = [];
-  var newMarginObjList = [];
-   
-  res.add.forEach(obj => {
-    if (
-      (view.pos.x < obj.pos.x + obj.size.width)   &&   // left
-      (view.pos.y < obj.pos.y + obj.size.height)  &&   // top
-      (view.pos.x + view.size.width > obj.pos.x)  &&   // right
-      (view.pos.y + view.size.height > obj.pos.y)      // bottom
-    ) {
-      newViewObjList.push(obj);
-    }
-    else newMarginObjList.push(obj);
-  });
-  
-  viewObjList = newViewObjList;
-  marginObjList = newMarginObjList;
-  
+  objList = res.add;
   setCurrObjElemList(getNewCurrObjElemList());
 }
 
 function updateObjList(res) { // called when user has moved over one unit; after this function called, viewObjList, marginObjList, currObjElemList are up-to-dated.
-  marginObjList = marginObjList.filter(obj => {
+  objList = objList.filter(obj => {
     var result = true;
     res.delete.forEach(objj => {
       if(objj.id === obj.id) {
@@ -109,39 +89,7 @@ function updateObjList(res) { // called when user has moved over one unit; after
     })
     return result;
   });
-  marginObjList = marginObjList.concat(res.add);
-  
-  var newViewObjList = [];
-  var newMarginObjList = [];
-  viewObjList.forEach(obj => {
-    if (
-      (view.pos.x < obj.pos.x + obj.size.width)   &&   // left
-      (view.pos.y < obj.pos.y + obj.size.height)  &&   // top
-      (view.pos.x + view.size.width > obj.pos.x)  &&   // right
-      (view.pos.y + view.size.height > obj.pos.y)      // bottom
-    ) newViewObjList.push(obj);
-    else {
-      newMarginObjList.push(obj);
-    }
-  })
-  
-  marginObjList.forEach(obj => {
-    if (
-      (view.pos.x < obj.pos.x + obj.size.width)   &&   // left
-      (view.pos.y < obj.pos.y + obj.size.height)  &&   // top
-      (view.pos.x + view.size.width > obj.pos.x)  &&   // right
-      (view.pos.y + view.size.height > obj.pos.y)      // bottom
-    ) {
-      newViewObjList.push(obj);
-    }
-    else newMarginObjList.push(obj);
-  });
-  viewObjList = newViewObjList;
-  marginObjList = newMarginObjList;
-  
-  console.log("viewObjList and marginObjList");
-  console.log(viewObjList);
-  console.log(marginObjList);
+  objList = objList.concat(res.add);
   
   setCurrObjElemList(getNewCurrObjElemList());
 }
@@ -195,8 +143,8 @@ function updateObjList(res) { // called when user has moved over one unit; after
       pos: user.pos
     });
     if (
-      Math.floor(prevPos.x) != Math.floor(userPosImg.pos.x) ||
-      Math.floor(prevPos.y) != Math.floor(userPosImg.pos.y)
+      parseInt((userPosImg.pos.x * 10).toFixed(0)) % 10 == 0 ||
+      parseInt((userPosImg.pos.y * 10).toFixed(0)) % 10 == 0
     ) {
       socket.emit("updateUnit", {
         id: user.id,
