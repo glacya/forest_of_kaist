@@ -1,0 +1,36 @@
+{
+    "objects": [
+        {
+            "type": "building",
+            "data": {
+                "size": {
+                    "width": 6,
+                    "height": 6
+                },
+                "pos": {
+                    "x": 50.0,
+                    "y": 50.0
+                },
+                "img": "/images/building_center.png",
+                "id": 1,
+                "name": "building_center"
+            }
+        },
+        {
+            "type": "building",
+            "data": {
+                "size": {
+                    "width": 4,
+                    "height": 4
+                },
+                "pos": {
+                    "x": 40.0,
+                    "y": 60.0
+                },
+                "img": "/images/building_cafeteria.png",
+                "id": 2,
+                "name": "building_cafeteria"
+            }
+        }
+    ]
+}

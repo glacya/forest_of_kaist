@@ -1,9 +1,12 @@
 const objects = require('./objects');
 const Building = objects.BuildingObj;
+const Tile = objects.TileObj;
 const Point = objects.Point;
-
+const fs = require('fs');
 const path = require('path');
-const image_path = "/images/"
+
+const image_path = "/images/";
+const map_path = "../mapdata/";
 
 class Cache {
     constructor() {
@@ -14,9 +17,52 @@ class Cache {
         this.user_location = new Map();
 
         // This is temporary map data.
-        // const img_path = path.join(__dirname, image_path + "building_center.png");
-        const img_path = image_path + "building_center.png";
-        this.map_data.push(new Building({width: 6, height: 6}, {x: 500, y: 500}, img_path, 1, "building_center"));
+        // TODO: load map data from json file.
+        // this.map_data.push(new Building({width: 6, height: 6}, {x: 500, y: 500}, image_path + "building_center.png", 1, "building_center"));
+        // this.map_data.push(new Building({width: 4, height: 4}, {x: 490, y: 510}, image_path + "building_cafeteria.png", 2, "building_cafeteria"));
+        this.readMapData();
+    }
+
+    // Read map data from json file.
+    // TODO: connect to DB to supply correct map to each user.
+    readMapData() {
+        fs.readFile(path.join(__dirname, map_path + "univ_1.json"), (error, data) => {
+            if (error) {
+                console.log(error.message);
+            }
+            else {
+                const file_data = data.toString();
+                const map_data = JSON.parse(file_data);
+
+                for (const object of map_data.objects) {
+                    switch (object.type) {
+                        case ("building"):
+                            const building = new Building(object.data.size, object.data.pos, object.data.img, object.data.id, object.data.name);
+                            this.map_data.push(building);
+                            break;
+                        default:
+                            break;
+                    }
+                }
+            }
+        });
+
+        fs.readFile(path.join(__dirname, map_path + "tile.json"), (error, data) => {
+            if (error) {
+                console.log(error.message);
+            }
+            else {
+                const file_data = data.toString();
+                const tile_data = JSON.parse(file_data);
+
+                for (const tile of tile_data.tiles) {
+                    const real_tile = new Tile(tile.size, tile.pos, tile.img, tile.id);
+                    this.map_data.push(real_tile);
+                }
+            }
+        });
+
+        console.log("Loading map data finished.");
     }
 
     setDefaultUserLocation(id) {
@@ -63,7 +109,7 @@ class Cache {
         const y = Math.floor(pos.y);
         const point_key = 1000 * x + y;
         const consult = this.map.get(point_key);
-        console.log(point_key);
+        // console.log(point_key);
 
         if (consult == undefined) {
             for (const object of this.map_data) {

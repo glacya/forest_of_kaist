@@ -49,6 +49,54 @@ class CharacterObj extends ObjectClass {
   }
 }
 
+<<<<<<< HEAD
 const user = new CharacterObj({width: 2, height: 2}, "center", imgList, "nupjuk");
+=======
+const user = new CharacterObj({width: 2, height: 2}, {x: 50.0, y: 50.0}, imgList, "nupjuk", true);
+
+// function Character() {
+//   const [posImg, setPosImg] = useState({
+//     pos: user.pos,
+//     img: user.img.down1
+//   });
+  
+//   // For cashing images
+//   const [isLoading, setIsLoading] = useState(true);
+//   useEffect(() => {
+//     const imgs = Object.values(imgList);
+//     cacheImages(imgs);
+//   }, []);
+//   const cacheImages = async (srcArray) => {
+//     const promises = await srcArray.map((src) => {
+//       return new Promise(function (resolve, reject) {
+//         const img = new Image();
+        
+//         img.src = src;
+//         img.onload = resolve();
+//         img.onerror = reject();
+//       });
+//     });
+//     await Promise.all(promises);
+//     setIsLoading(false);
+//   };
+  
+  
+//   const imgElement = React.createElement(
+//     "img",
+//     { 
+//       src: posImg.img,
+//       alt: character.name, 
+//       width: mapClass.unitToPx(character.size.width),
+//       height: mapClass.unitToPx(character.size.height),
+//       style: { position: "absolute", left: view.unitposToPxpos(posImg.pos).x, top: view.unitposToPxpos(posImg.pos).y}
+//     }
+//   )
+//   return (
+//     <div>
+//       { isLoading ? "Loading image ..." : imgElement }
+//     </div>
+//   );
+// }
+>>>>>>> 81549f509c1bc5715f81c914127e5fe0e7e900eb
 
 export { user };

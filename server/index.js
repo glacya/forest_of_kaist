@@ -1,6 +1,7 @@
 const session = require('express-session');
 const mysql_session = require('express-mysql-session');
-const app = require('express')();
+const express = require('express');
+const app = express();
 const path = require('path');
 const util = require('util');
 const objects = require('./utils/objects');
@@ -8,10 +9,11 @@ const Cache = require('./utils/cache').Cache;
 const Point = objects.Point;
 const Building = objects.Building;
 const Users = require('./utils/user').Users;
+const encrypt = require('./utils/encrypt');
+const hash_password = encrypt.hash_password;
+const verify = encrypt.verify;
 
 var cors = require('cors');
-
-const crypto = require('crypto');
 
 const mysql = require('mysql');
 const fs = require('fs');
@@ -58,9 +60,8 @@ app.use(session({
         maxAge: 60 * 60 * 1000      // 1 hours
     }
 }));
-
-const random_bytes_promise = util.promisify(crypto.randomBytes);
-const pbkdf2_promise = util.promisify(crypto.pbkdf2);
+app.use(express.json());
+app.use(express.urlencoded({extended: true}));
 
 function debug(str) {
     var time = new Date();
@@ -68,40 +69,19 @@ function debug(str) {
     console.log(t + ": " + str);
 }
 
-const create_salt = async() => {
-    const buffer = await random_bytes_promise(64);
-    return buffer.toString("base64");
-}
-
-const hash_password = async(password) => {
-    const salt = await create_salt();
-    const key = await pbkdf2_promise(password, salt, 100, 64, "sha512");
-    const hashed_pw = key.toString("base64");
-  
-    return { hashed_pw, salt };
-};
-
-const verify = async(user_pw, user_salt, answer) => {
-    const key = await pbkdf2_promise(user_pw, user_salt, 100, 64, "sha512");
-    const result = key.toString("base64");
-
-    return result === answer;
-}
-
+// const server_addr = "192.249.18.201"
 var cache = new Cache();
 var users = new Users();
 
-// TEMP CODE: set rendering option to EJS
-app.set('view engine', 'ejs');
-
 app.get("/", (req, res) => {
-    // TODO: redirect to login page.
-    // TODO: if login cookie exists, redirect to main game page.
+    // Redirect to login page.
+    // If login cookie exists, redirect to main game page.
     debug("GET /");
     if (req.session.is_logined === true) {
         debug("Already logged in.");
+        // TODO: cookie?
         res.cookie("id", req.session.id);
-        res.redirect("http://localhost:3000/index.html");
+        res.redirect(`http://localhost:3000/index.html`);
     }
     else {
         debug("Not logged in, login please");
@@ -109,6 +89,7 @@ app.get("/", (req, res) => {
     }
 });
 
+// Testing code for register. Will be replaced.
 app.get("/register.html", (req, res) => {
     debug("GET /register.html");
     var id = req.query.id;
@@ -150,7 +131,51 @@ app.get("/register.html", (req, res) => {
     }
 });
 
+// Handle registration of user. This should be used.
+app.post("/register", (req, res) => {
+    debug("POST /register");
+    var id = req.body.id;
+    var pw = req.body.pw;
 
+    if (id != undefined && pw != undefined) {
+        debug(`With id = ${id}`);
+        connection.query('select id from users where id=?', [id], async (error, rows, field) => {
+            if (error) {
+                // Query error.
+                debug("Register failed due to query error 1");
+                debug(error.message);
+                res.redirect('/');
+            }
+            else if (rows.length > 0) {
+                debug(`User ID ${id} already exists.`);
+                res.redirect(`http://localhost:3000/register.html`);
+            }
+            else {
+                debug("OK, you can use this id..");
+                const hashed_pw = await hash_password(pw);
+                connection.query('insert into users(id, pw, salt) values(?, ?, ?)', [id, hashed_pw.hashed_pw, hashed_pw.salt], (error, rows, field) => {
+                    if (error) {
+                        // Query error again..
+                        debug("Register failed due to query error 2");
+                        debug(error.message);
+                        res.redirect('/');
+                    }
+                    else {
+                        debug(`User ${id}, ${hashed_pw.hashed_pw} successfully registered.`);
+                        // Redirect to login page.
+                        res.redirect('/')
+                    }
+                })
+            }
+        })
+    }
+    else {
+        // TODO: change file path accordingly.
+        res.sendFile(path.join(__dirname, "../client/forest-of-kaist/public/register.html"));
+    }
+})
+
+// Testing code for login. Will be replaced.
 app.get("/login.html", (req, res) => {
     var id = req.query.id;
     var pw = req.query.pw;
@@ -163,7 +188,7 @@ app.get("/login.html", (req, res) => {
                 res.redirect('/');
             }
             else if (rows.length == 0) {
-                debug("There are no such user, or password is incorrect.");
+                debug("There is no such user, or password is incorrect.");
                 res.redirect('/');
             }
             else {
@@ -174,11 +199,11 @@ app.get("/login.html", (req, res) => {
                     req.session.is_logined = true;
                     req.session.save(function() {
                         res.cookie("id", id);
-                        res.redirect('http://localhost:3000/index.html');
+                        res.redirect(`http://localhost:3000/index.html`);
                     })
                 }
                 else {
-                    debug("There are no such user, or password is incorrect.");
+                    debug("There is no such user, or password is incorrect.");
                     res.redirect("/");
                 }
                 
@@ -187,6 +212,49 @@ app.get("/login.html", (req, res) => {
     }
     else {
         res.sendFile(path.join(__dirname, "./test_login.html"));
+    }
+});
+
+// Handles login of user.
+app.post("/login", (req, res) => {
+    var id = req.body.id;
+    var pw = req.body.pw;
+    debug("POST /login");
+    if (id != undefined || pw != undefined) {
+        connection.query('select * from users where id=?', [id], async (error, rows, field) => {
+            if (error) {
+                // Query error.
+                debug("Login failed due to query error.");
+                debug(error.message);
+                res.redirect('/');
+            }
+            else if (rows.length == 0) {
+                debug("There is no such user, or password is incorrect.");
+                res.redirect('/');
+            }
+            else {
+                const user_info = rows[0];
+                if (await verify(pw, user_info.salt, user_info.pw)) {
+                    debug("Login success.");
+                    req.session.id = rows.id;
+                    req.session.is_logined = true;
+                    req.session.save(function() {
+                        // TODO: cookie??
+                        res.cookie("id", id);
+                        res.redirect(`http://localhost:3000/index.html`);
+                    })
+                }
+                else {
+                    debug("There is no such user, or password is incorrect.");
+                    res.redirect("/");
+                }
+                
+            }
+        })
+    }
+    else {
+        // TODO: change file path accordingly.
+        res.sendFile(path.join(__dirname, "../client/forest-of-kaist/public/login.html"));
     }
 });
 
@@ -199,7 +267,7 @@ io.on('connection', (socket) => {
         debug("User entered.");
         const user_temp_id = users.assign();
         cache.setDefaultUserLocation(user_temp_id);
-        const init_building_list = cache.getObjectList({x: 490, y: 490});
+        const init_building_list = cache.getObjectList({x: 50, y: 50});
         const init_msg = {
             id: user_temp_id,
             objList: {
@@ -220,7 +288,7 @@ io.on('connection', (socket) => {
             // - ID of the user
             // - position of the user (x, y)
     
-            console.log(`updateUnit: ${msg.id} (${msg.pos.x},${msg.pos.y})`);
+            console.log(`update: ${msg.id} (${msg.pos.x},${msg.pos.y})`);
     
             const result = cache.getDiff(msg);
 

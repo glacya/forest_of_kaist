@@ -27,9 +27,21 @@ class BuildingObj extends ObjectClass {
     constructor(size, pos, img, id, name) {
       super(size, pos, img, id);
       this.name = name;
+      this.type = "building";
     }
+}
+
+class TileObj {
+  constructor(size, pos, img, id) {
+    this.size = size;
+    this.pos = pos;
+    this.img = img;
+    this.id = id;
+    this.type = "tile";
+  }
 }
 
 exports.Point = Point;
 exports.ObjectClass = ObjectClass;
 exports.BuildingObj = BuildingObj;
+exports.TileObj = TileObj;
