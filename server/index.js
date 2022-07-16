@@ -267,7 +267,7 @@ io.on('connection', (socket) => {
         debug("User entered.");
         const user_temp_id = users.assign();
         cache.setDefaultUserLocation(user_temp_id);
-        const init_building_list = cache.getObjectList({x: 490, y: 490});
+        const init_building_list = cache.getObjectList({x: 50, y: 50});
         const init_msg = {
             id: user_temp_id,
             objList: {

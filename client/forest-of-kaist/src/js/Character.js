@@ -54,7 +54,7 @@ class CharacterObj extends ObjectClass {
   }
 }
 
-const user = new CharacterObj({width: 2, height: 2}, "center", imgList, "nupjuk", true);
+const user = new CharacterObj({width: 2, height: 2}, {x: 50.0, y: 50.0}, imgList, "nupjuk", true);
 
 // function Character() {
 //   const [posImg, setPosImg] = useState({

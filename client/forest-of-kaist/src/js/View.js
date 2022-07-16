@@ -62,7 +62,7 @@ class ViewClass{
   }
 }
 
-const view = new ViewClass({width: 20, height: 15}, "center");
+const view = new ViewClass({width: 20, height: 15}, {x: 40, y: 42.5});
   
 function View() {
     const divElement = React.createElement(
