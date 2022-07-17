@@ -198,13 +198,13 @@ class Users {
         // remove entry of this.user_neighbors
 
         const neighbors = this.user_neighbors.get(id);
-        this.user_neighbors.delete(id);
-
+        
         neighbors.forEach((neigh_id) => {
             var neigh_list = this.user_neighbors.get(neigh_id);
             neigh_list = neigh_list.filter(myid => myid != id);
             this.user_neighbors.set(neigh_id, neigh_list);
         });
+        this.user_neighbors.delete(id);
 
         return user;
     }

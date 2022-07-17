@@ -292,6 +292,9 @@ io.on('connection', (socket) => {
         users.setSocket(user_temp_id, socket.id);
         users.setUserInfo(user);
 
+        users.updateNeighbors(user);
+
+        // On updateUnit: returns set of objects (excluding characters) that should be added or deleted.
         socket.on("updateUnit", (msg) => {
             // MEMO: 'msg' contains variable sent from client.
             // In this case, msg is 'ObjectClass'. I would use..
@@ -309,6 +312,7 @@ io.on('connection', (socket) => {
             socket.emit("updateObjList", result);
         });
 
+        // On move: updates neighbor list of users and send update message.
         socket.on("move", (user) => {
             // Emit position to every client connected to the server.
             // The clients will take care of movements.

@@ -16,8 +16,8 @@ import Login from './js/login/Login';
 import Register from './js/login/Register'
 import Layout from './js/login/Layout';
 
-const address = "http://172.10.18.171";
-// const address = "http://192.249.18.201";
+// const address = "http://172.10.18.171";
+const address = "http://192.249.18.201";
 
 const socket = io.connect(address, {
   cors: { origin: ["http://localhost", "http://localhost:3000","http://localhost:3001"]}
