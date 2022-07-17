@@ -2,13 +2,15 @@ class Users {
     constructor() {
         this.current_id = 10000;
 
+        // Stores currently online user information.
         // user_id -> user (includes position, size, ...)
         this.user_info = new Map();
 
+        // Stores currently online users' socket id's.
         // user_id -> socket_id
         this.sockets = new Map();
 
-        // It's like graph.
+        // It's like graph. Stores neighbor relationship of currently online users.
         // user_id -> ListOfUserId
         this.user_neighbors = new Map();
     }
@@ -102,7 +104,8 @@ class Users {
                     overlap.push(id1);
                     instruction_set.push({
                         type: "move",
-                        user: this.user_info.get(id1)
+                        target: id1,
+                        user: user
                     });
                 }
             });
@@ -122,7 +125,8 @@ class Users {
                 vanishing.push(id1);
                 instruction_set.push({
                     type: "delete",
-                    user: this.user_info.get(id1)
+                    target: id1,
+                    user: user
                 });
             }
         });
@@ -141,7 +145,8 @@ class Users {
                 emerging.push(id1);
                 instruction_set.push({
                     type: "add",
-                    user: this.user_info.get(id1)
+                    target: id1,
+                    user: user
                 });
             }
         });
@@ -168,6 +173,40 @@ class Users {
         });
         
         return instruction_set;
+    }
+
+    // Cleans up resources of socket id.
+    // Additionally, sends delete to all users.
+    cleanUp(socket_id) {
+        var id = undefined;
+        this.sockets.forEach((sock, uid) => {
+            if (sock == socket_id) {
+                id = uid;
+            }
+        });
+        this.sockets.delete(id);
+
+        if (id == undefined) {
+            console.log("That socket does not exist")
+            return;
+        }
+        console.log(`User ${id} disconnected.`);
+
+        const user = this.user_info.get(id);
+        this.user_info.delete(id);
+
+        // remove entry of this.user_neighbors
+
+        const neighbors = this.user_neighbors.get(id);
+        this.user_neighbors.delete(id);
+
+        neighbors.forEach((neigh_id) => {
+            var neigh_list = this.user_neighbors.get(neigh_id);
+            neigh_list = neigh_list.filter(myid => myid != id);
+            this.user_neighbors.set(neigh_id, neigh_list);
+        });
+
+        return user;
     }
 }
 
