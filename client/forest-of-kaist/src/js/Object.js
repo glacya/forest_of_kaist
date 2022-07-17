@@ -25,7 +25,7 @@ function getNewCurrObjElemList() {
   objList.forEach(obj => {
     tempObjElemList.push(React.createElement(
       "img",
-      {
+      { 
         key: obj.id,
         id: obj.id,
         src: obj.img,
@@ -40,6 +40,35 @@ function getNewCurrObjElemList() {
         }
       }
     ));
+    // tempObjElemList.push(
+    //   <div>
+    //     {React.createElement(
+    //       "img",
+    //       { 
+    //         key: obj.id,
+    //         id: obj.id,
+    //         src: obj.img,
+    //         alt: obj.name, 
+    //         width: mapClass.unitToPx(obj.size.width),
+    //         height: mapClass.unitToPx(obj.size.height),
+    //         style: { 
+    //           position: "absolute", 
+    //           left: view.unitposToPxpos(obj.pos).x, 
+    //           top: view.unitposToPxpos(obj.pos).y,
+    //           zIndex: view.getZIdx(obj.type)
+    //         }
+    //       }
+    //     )}
+    //     <div
+    //       style={{
+    //         position: "absolute", 
+    //         left: view.unitposToPxpos(obj.pos).x, 
+    //         top: view.unitposToPxpos(obj.pos).y,
+    //         zIndex: view.getZIdx(obj.type)
+    //       }}
+    //     > {obj.id} </div>
+    //   </div>
+    // )
   });
   return tempObjElemList;
 }
@@ -74,16 +103,18 @@ res == {
 */
 
   function updateAnotherUser(res) {
+    console.log("updateAnotherUser called;");
+    console.log(res);
     switch (res.type) {
       case "add":
         objList.push(res.user);
         break;
       case "move":
-        objList = objList.filter(obj => obj.id != user.id);
+        objList = objList.filter(obj => obj.id != res.user.id);
         objList.push(res.user);
         break;
       case "delete":
-        objList = objList.filter(obj => obj.id != user.id);
+        objList = objList.filter(obj => obj.id != res.user.id);
         break;
       default:
         console.log(`Error! res.type ${res.type} is neither add, move, nor delete!`);
@@ -159,6 +190,8 @@ res == {
       React.createElement(
         "img",
         { 
+          key: user.id,
+          id: user.id,
           src: user.img,
           alt: user.name, 
           width: mapClass.unitToPx(user.size.width),
@@ -170,8 +203,36 @@ res == {
             zIndex: view.getZIdx(user.type)
           }
         }
-      )
-    );
+    ));
+    // setUserElement(
+    //   <div>
+    //     {React.createElement(
+    //       "img",
+    //       { 
+    //         key: user.id,
+    //         id: user.id,
+    //         src: user.img,
+    //         alt: user.name, 
+    //         width: mapClass.unitToPx(user.size.width),
+    //         height: mapClass.unitToPx(user.size.height),
+    //         style: { 
+    //           position: "absolute", 
+    //           left: view.unitposToPxpos(user.pos).x, 
+    //           top: view.unitposToPxpos(user.pos).y,
+    //           zIndex: view.getZIdx(user.type)
+    //         }
+    //       }
+    //     )}
+    //     <div
+    //       style={{
+    //         position: "absolute", 
+    //         left: view.unitposToPxpos(user.pos).x, 
+    //         top: view.unitposToPxpos(user.pos).y,
+    //         zIndex: view.getZIdx(user.type)
+    //       }}
+    //     > {user.id} </div>
+    //   </div>
+    // );
     setCurrObjElemList(getNewCurrObjElemList());
     socket.emit("move", user);
     if (
@@ -210,6 +271,14 @@ res == {
       }
     )
   );
+  
+/*
+res ={
+  type: "add" || "move" || "delete"
+  user: User
+}
+res = { type: "add", user: User }
+*/
   
   useEffect(() => {
     socket.emit("enter", user);

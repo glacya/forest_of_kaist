@@ -318,6 +318,8 @@ io.on('connection', (socket) => {
             emit_list.forEach((item) => {
                 const socket_id = users.getSocket(item.user.id);
                 console.log(`User ${user.id} sends ${item.type} to User ${item.user.id}`);
+                // console.log(item);
+                item.user = user;
                 io.to(socket_id).emit("anotherUser", item);
             });
         });
