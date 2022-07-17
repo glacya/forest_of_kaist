@@ -316,15 +316,21 @@ io.on('connection', (socket) => {
             const emit_list = users.updateNeighbors(user);
 
             emit_list.forEach((item) => {
-                const socket_id = users.getSocket(item.user.id);
-                console.log(`User ${user.id} sends ${item.type} to User ${item.user.id}`);
-                io.to(socket_id).emit("anotherUser", item);
+                const socket_id = users.getSocket(item.target);
+                console.log(`User ${user.id} sends ${item.type} to User ${item.target}`);
+                const repacked_item = {type: item.type, user: item.user};
+                io.to(socket_id).emit("anotherUser", repacked_item);
             });
         });
 
         socket.on("enter_building", (msg) => {
             // Access building. 
             // TODO..
+        });
+
+        socket.on("disconnect", (reason) => {
+            const current_user = users.cleanUp(socket.id);
+            io.emit("anotherUser", {type: "delete", user: current_user});
         });
     });
 });
