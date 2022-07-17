@@ -1,7 +1,7 @@
 // import logo from './logo.svg';
 import './App.css';
 import React, { useEffect, useState, useRef } from "react";
-import {Link, Route, Routes,Switch, BrowserRouter} from "react-router-dom";
+import {Link, Route, Routes, BrowserRouter} from "react-router-dom";
 import ReactDOM from 'react-dom';
 import { createPortal } from "react-dom";
 import io from 'socket.io-client';
@@ -32,6 +32,13 @@ const socket = io.connect(address, {
 // );
 
 function App() {
+  // Add this in node_modules/react-dom/index.js
+window.React1 = require('react');
+
+// Add this in your component file
+require('react-dom');
+window.React2 = require('react');
+console.log(window.React1 === window.React2);
   const userId = Cookies.get('id');
   // console.log(`userId: ${userId}`);
   const frame = React.createElement(
@@ -47,34 +54,27 @@ function App() {
     }
   )
   return (
-    // <div>
-    //   <Route path="/" component={Layout} exact={true} />
-    //   <Route path="/login" component={Login} />
-    //   <Route path="/register" component={Register} />
-    // </div>
+    <main className='App'>
+      
 
-    // <Routes>
-    //   <Route path="/" element={<Layout />}>
-    //     {/* public routes */}
-    //     <Route path="login" element={<Login />} />
-    //     <Route path="register" element={<Register />} />
+    <Routes>
+      <Route path="/" element={<Layout />}>
+        {/* public routes */}
+        <Route path="login" element={<Login />} />
+        <Route path="register" element={<Register />} />
         
-    //     {/* catch all
-    //     <Route path="*" element={<Missing />} /> */}
-    //   </Route>
-    // </Routes>
-    
-    // <main className='App'>
-    //   <Register /> 
-    // </main>
-    
+        {/* catch all
+        <Route path="*" element={<Missing />} /> */}
+      </Route>
+    </Routes>
+    </main>
     
     // <RenderInWindow>
-    <div>
-      { View() }
-      { ObjectFunc() }
-      { frame }
-    </div>
+    // <div>
+    //   { View() }
+    //   { ObjectFunc() }
+    //   { frame }
+    // </div>
     // </RenderInWindow>
     
   );

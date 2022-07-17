@@ -5,8 +5,6 @@ import { App } from './App';
 import reportWebVitals from './reportWebVitals';
 import {AuthProvider} from './js/login/AuthProvider';
 import {Link, Route, Switch, BrowserRouter} from "react-router-dom";
-import Login from './js/login/Login'
-import Register from './js/login/Register'
 
 const root = ReactDOM.createRoot(document.getElementById('root'));
 
