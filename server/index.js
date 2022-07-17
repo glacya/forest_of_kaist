@@ -26,7 +26,7 @@ const server = require('http').createServer(app);
 const port = process.env.PORT || 80;
 const io = require("socket.io")(server, {
     cors: {
-        origin: "*",
+        origin: ["http://localhost", "http://localhost:3000", "http://localhost:3001"],
         methods: ["GET", "POST"]
     },
     'transports': [
@@ -73,6 +73,7 @@ function debug(str) {
 var cache = new Cache();
 var users = new Users();
 
+// This code is about to be removed.
 app.get("/", (req, res) => {
     // Redirect to login page.
     // If login cookie exists, redirect to main game page.
@@ -144,11 +145,11 @@ app.post("/register", (req, res) => {
                 // Query error.
                 debug("Register failed due to query error 1");
                 debug(error.message);
-                res.redirect('/');
+                res.status(400).send(error.message);
             }
             else if (rows.length > 0) {
                 debug(`User ID ${id} already exists.`);
-                res.redirect(`http://localhost:3000/register.html`);
+                res.status(400).send("The ID already exists.");
             }
             else {
                 debug("OK, you can use this id..");
@@ -158,20 +159,19 @@ app.post("/register", (req, res) => {
                         // Query error again..
                         debug("Register failed due to query error 2");
                         debug(error.message);
-                        res.redirect('/');
+                        res.status(400).send(error.message);
                     }
                     else {
                         debug(`User ${id}, ${hashed_pw.hashed_pw} successfully registered.`);
                         // Redirect to login page.
-                        res.redirect('/')
+                        res.status(200).send("Register succeeded.");
                     }
                 })
             }
         })
     }
     else {
-        // TODO: change file path accordingly.
-        res.sendFile(path.join(__dirname, "../client/forest-of-kaist/public/register.html"));
+        res.status(400).send("Bad request body; you must include id and pw.");
     }
 })
 
@@ -220,17 +220,17 @@ app.post("/login", (req, res) => {
     var id = req.body.id;
     var pw = req.body.pw;
     debug("POST /login");
-    if (id != undefined || pw != undefined) {
+    if (id != undefined && pw != undefined) {
         connection.query('select * from users where id=?', [id], async (error, rows, field) => {
             if (error) {
                 // Query error.
                 debug("Login failed due to query error.");
                 debug(error.message);
-                res.redirect('/');
+                res.status(400).send(error.message);
             }
             else if (rows.length == 0) {
                 debug("There is no such user, or password is incorrect.");
-                res.redirect('/');
+                res.status(400).send("There is no such user, or password is incorrect.");
             }
             else {
                 const user_info = rows[0];
@@ -239,22 +239,19 @@ app.post("/login", (req, res) => {
                     req.session.id = rows.id;
                     req.session.is_logined = true;
                     req.session.save(function() {
-                        // TODO: cookie??
-                        res.cookie("id", id);
-                        res.redirect(`http://localhost:3000/index.html`);
+                        res.status(200).send("Login succeeded.");
                     })
                 }
                 else {
                     debug("There is no such user, or password is incorrect.");
-                    res.redirect("/");
+                    res.status(400).send("There is no such user, or password is incorrect.");
                 }
                 
             }
-        })
+        });
     }
     else {
-        // TODO: change file path accordingly.
-        res.sendFile(path.join(__dirname, "../client/forest-of-kaist/public/login.html"));
+        res.status(400).send("Bad request body; you must include id and pw.");
     }
 });
 
@@ -276,17 +273,25 @@ io.on('connection', (socket) => {
             }
         };
         socket.emit("welcome", init_msg);
-        console.log(init_object_list);
-        
+        // console.log(init_object_list);
+        console.log(socket.id);
     
         user.id = user_temp_id;
-        
+
+        // Notify other users.
+        // This event causes message only.
         io.emit("newUser", user);
 
         const result = cache.getDiff(user);
+        result.add.push(user);
         console.log(result);
         socket.emit("setObjList", result);
-        socket.broadcast.emit("anotherUser", { type: "add", user: user });
+        socket.broadcast.emit("anotherUser", {
+            type: "add",
+            user: user
+        });
+        users.setSocket(user_temp_id, socket.id);
+        users.setUserInfo(user);
 
         socket.on("updateUnit", (msg) => {
             // MEMO: 'msg' contains variable sent from client.
@@ -294,11 +299,11 @@ io.on('connection', (socket) => {
             // - ID of the user
             // - position of the user (x, y)
     
-            console.log(`update: ${msg.id} (${msg.pos.x},${msg.pos.y})`);
+            console.log(`updateUnit: ${msg.id} (${msg.pos.x},${msg.pos.y})`);
     
             const result = cache.getDiff(msg);
 
-            console.log(result);
+            // console.log(result);
             
             // Emit information to the user whom sent move information.
             // Result contains two fields: {add: [], delete: []}
@@ -308,17 +313,20 @@ io.on('connection', (socket) => {
         socket.on("move", (user) => {
             // Emit position to every client connected to the server.
             // The clients will take care of movements.
-            io.emit('anotherUser', {
-                type: "add" || "move" || "delete",
-                user: user
+            users.setUserInfo(user);
+            const emit_list = users.updateNeighbors(user);
+
+            emit_list.forEach((item) => {
+                const socket_id = users.getSocket(item.user.id);
+                console.log(`User ${user.id} sends ${item.type} to User ${item.user.id}`);
+                io.to(socket_id).emit("anotherUser", item);
             });
         });
 
         socket.on("enter_building", (msg) => {
             // Access building. 
+            // TODO..
         });
-
-        socket.on
     });
 });
 
