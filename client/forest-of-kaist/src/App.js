@@ -1,7 +1,7 @@
 // import logo from './logo.svg';
 import './App.css';
 import React, { useEffect, useState, useRef } from "react";
-import {Link, Route, Routes, BrowserRouter} from "react-router-dom";
+import {Link, Route, Routes, BrowserRouter, Switch} from "react-router-dom";
 import ReactDOM from 'react-dom';
 import { createPortal } from "react-dom";
 import io from 'socket.io-client';
@@ -32,13 +32,6 @@ const socket = io.connect(address, {
 // );
 
 function App() {
-  // Add this in node_modules/react-dom/index.js
-window.React1 = require('react');
-
-// Add this in your component file
-require('react-dom');
-window.React2 = require('react');
-console.log(window.React1 === window.React2);
   const userId = Cookies.get('id');
   // console.log(`userId: ${userId}`);
   const frame = React.createElement(
@@ -55,18 +48,13 @@ console.log(window.React1 === window.React2);
   )
   return (
     <main className='App'>
-      
-
-    <Routes>
+      <Routes>
       <Route path="/" element={<Layout />}>
-        {/* public routes */}
         <Route path="login" element={<Login />} />
         <Route path="register" element={<Register />} />
-        
-        {/* catch all
-        <Route path="*" element={<Missing />} /> */}
       </Route>
-    </Routes>
+    </Routes>  
+    
     </main>
     
     // <RenderInWindow>

@@ -1,5 +1,5 @@
 import { Link } from "react-router-dom";
-import { useRef, useState, useEffect } from "react";
+import React, { useRef, useState, useEffect } from "react";
 import { faCheck, faTimes, faInfoCircle } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import axios from './axios'
@@ -7,11 +7,11 @@ import axios from './axios'
 
 const USER_REGEX = /^[A-z][A-z0-9-_]{3,23}$/;
 const PWD_REGEX = /^(?=.*[a-z])(?=.*[A-Z])(?=.*[0-9])(?=.*[!@#$%]).{8,24}$/;
-//const REGISTER_URL = 'http://192.249.18.201/register';
-const REGISTER_URL = '/register';
+const REGISTER_URL = 'http://192.249.18.171/register';
+// const REGISTER_URL = '/register';
 
 
-const Register = () => {
+function Register ()  {
     const userRef = useRef();
     const errRef = useRef();
 
@@ -175,7 +175,6 @@ const Register = () => {
                     <p>
                         Already registered?<br />
                         <span className="line">
-                                {/* <Link to="/">Sign In</Link> */}
                             <a href="login">Sign In</a>
                         </span>
                     </p>

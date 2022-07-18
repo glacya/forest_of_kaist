@@ -1,13 +1,8 @@
-import { Link, useNavigate, useLocation } from 'react-router-dom';
-
 import { useRef, useState, useEffect, useContext } from 'react';
-import AuthContext from "./AuthProvider";
+import { AuthContext } from "./AuthProvider";
 
 import axios from './axios';
-//const LOGIN_URL = 'http://192.249.18.201/login';
-const LOGIN_URL = '/login';
-
-
+const LOGIN_URL = 'http://192.249.18.171/login';
 
 const Login = () => {
     const { setAuth } = useContext(AuthContext);
@@ -32,10 +27,10 @@ const Login = () => {
 
         try {
             const response = await axios.post(LOGIN_URL,
-                JSON.stringify({ id:user, pw:pwd }),
+                JSON.stringify({ user, pwd }),
                 {
-                    headers: { 'Content-Type': 'application/json' , "Access-Control-Allow-Origin": "http://localhost"},
-                    withCredentials: false
+                    headers: { 'Content-Type': 'application/json' },
+                    withCredentials: true
                 }
             );
             console.log(JSON.stringify(response?.data));
@@ -99,7 +94,6 @@ const Login = () => {
                     <p>
                         Need an Account?<br />
                         <span className="line">
-                            {/* <Link to="/register">Sign Up</Link> */}
                             <a href="register">Sign Up</a>
                         </span>
                     </p>
