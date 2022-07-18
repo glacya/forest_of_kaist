@@ -5,8 +5,7 @@ class Money {
     }
 
     gainBaseIncome() {
-        this.total_money += this.base_income;
-        return this.total_money;
+        return this.gainMoney(this.base_income);
     }
 
     getBaseIncome() {

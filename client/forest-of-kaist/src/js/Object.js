@@ -19,6 +19,17 @@ const imgList = {
   right2: "/images/user_right_2.png"
 }
 
+const gooseImgList = [
+  "/images/goose_down_1.png",
+  "/images/goose_down_2.png",
+  "/images/goose_left_1.png",
+  "/images/goose_left_2.png",
+  "/images/goose_up_1.png",
+  "/images/goose_up_2.png",
+  "/images/goose_right_1.png",
+  "/images/goose_right_2.png"
+]
+
 function getElementbyObj(obj) {
   return React.createElement(
     "img",
@@ -54,7 +65,7 @@ function ObjectFunc() {
   const [isLoading, setIsLoading] = useState(true);
   useEffect(() => {
     const imgs = Object.values(imgList);
-    cacheImages(imgs);
+    cacheImages(imgs.concat(gooseImgList));
   }, []);
   const cacheImages = async (srcArray) => {
     const promises = await srcArray.map((src) => {
@@ -80,7 +91,7 @@ res == {
 */
 
   function updateOthers(res) {
-    console.log("updateOthers received with: ", res);
+    // console.log("updateOthers received with: ", res);
     
     const delOrMov = res.delete.concat(res.move);
     
@@ -148,6 +159,7 @@ res == {
   });
   
   const handleKeyDown = (e) => {
+    e.preventDefault();
     switch (e.keyCode) {
       case 37: // Left
       case 65:
@@ -245,7 +257,7 @@ res == {
     //     > {user.id} </div>
     //   </div>
     // );
-    setCurrObjElemList(getNewCurrObjElemList());
+    // setCurrObjElemList(getNewCurrObjElemList());
     socket.emit("move", user);
     
     if (countCond()) {
@@ -277,18 +289,16 @@ res == {
         }
       }
     )
-  );
-  
+  );  
 /*
 res ={
   type: "add" || "move" || "delete"
   user: User
-}
 res = { type: "add", user: User }
 */
   
   useEffect(() => {
-    socket.emit("enter", user);
+  socket.emit("enter", user);
     socket.on("welcome", (res) => {
       user.setId(res.id);
       setObjList(res.objList);

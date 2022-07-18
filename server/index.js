@@ -190,7 +190,7 @@ const updateGeeseMovement = setInterval(function() {
 const spawnGoose = setInterval(function() {
     const result = others.generateGoose();
     if (result != undefined) {
-        console.log("Generated goose!!");
+        // console.log("Generated goose!!");
         users.user_info.forEach((user, id) => {
             const socket = users.getSocket(id);
             const others_list = others.getDiff(user);
