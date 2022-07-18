@@ -1,15 +1,6 @@
 import ObjectClass from "./ObjectClass";
 
-const imgList = {
-  down1: "/images/user_down_1.png",
-  down2: "/images/user_down_2.png",
-  left1: "/images/user_left_1.png",
-  left2: "/images/user_left_2.png",
-  up1: "/images/user_up_1.png",
-  up2: "/images/user_up_2.png",
-  right1: "/images/user_right_1.png",
-  right2: "/images/user_right_2.png"
-}
+const imgPath = "/images/user_down_1.png";
 
 class CharacterObj extends ObjectClass {
   constructor(size, pos, img, name) {
@@ -47,8 +38,12 @@ class CharacterObj extends ObjectClass {
   setPos(pos) {
     this.pos = { x: pos.x.toFixed(1), y: pos.y.toFixed(1) };
   }
+  
+  setImg(img) {
+    this.img = img;
+  }
 }
 
-const user = new CharacterObj({width: 2, height: 2}, "center", imgList, "nupjuk");
+const user = new CharacterObj({width: 2, height: 2}, "center", imgPath, "nupjuk");
 
 export { user };

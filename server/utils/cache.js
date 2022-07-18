@@ -1,6 +1,7 @@
 const objects = require('./objects');
 const Building = objects.BuildingObj;
 const Tile = objects.TileObj;
+const Character = objects.CharacterObj;
 const Point = objects.Point;
 const fs = require('fs');
 const path = require('path');
