@@ -12,6 +12,8 @@ const Users = require('./utils/user').Users;
 const encrypt = require('./utils/encrypt');
 const hash_password = encrypt.hash_password;
 const verify = encrypt.verify;
+const Money = require('./utils/money').Money;
+const Others = require('./utils/others').Others;
 
 var cors = require('cors');
 
@@ -26,13 +28,13 @@ const server = require('http').createServer(app);
 const port = process.env.PORT || 80;
 const io = require("socket.io")(server, {
     cors: {
-        origin: ["http://localhost", "http://localhost:3000", "http://localhost:3001"],
+        origin: ["http://localhost", "http://localhost:3000", "http://localhost:3001", "http://localhost:53469"],
         methods: ["GET", "POST"]
     },
-    'transports': [
-        'websocket',
-        'polling'
-    ]
+    transports: [
+        'websocket'
+    ],
+    upgrade: false
 });
 
 const mysql_info = {
@@ -69,67 +71,14 @@ function debug(str) {
     console.log(t + ": " + str);
 }
 
-// const server_addr = "192.249.18.201"
 var cache = new Cache();
 var users = new Users();
+var money = new Money();
+var others = new Others();
 
-// This code is about to be removed.
+// Just redirect.. but it does not work because it uses port 3000
 app.get("/", (req, res) => {
-    // Redirect to login page.
-    // If login cookie exists, redirect to main game page.
-    debug("GET /");
-    if (req.session.is_logined === true) {
-        debug("Already logged in.");
-        // TODO: cookie?
-        res.cookie("id", req.session.id);
-        res.redirect(`http://localhost:3000/index.html`);
-    }
-    else {
-        debug("Not logged in, login please");
-        res.redirect("/login.html");
-    }
-});
-
-// Testing code for register. Will be replaced.
-app.get("/register.html", (req, res) => {
-    debug("GET /register.html");
-    var id = req.query.id;
-    var pw = req.query.pw;
-
-    if (id != undefined && pw != undefined) {
-        debug(`With id = ${id}`);
-        connection.query('select id from users where id=?', [id], async (error, rows, field) => {
-            if (error) {
-                // Query error.
-                debug("Register failed due to query error.");
-                debug(error.message);
-                res.redirect('/register.html');
-            }
-            else if (rows.length > 0) {
-                debug(`User ID ${id} already exists.`);
-                res.redirect('/register.html');
-            }
-            else {
-                debug("OK, you can use this id..");
-                const hashed_pw = await hash_password(pw);
-                connection.query('insert into users(id, pw, salt) values(?, ?, ?)', [id, hashed_pw.hashed_pw, hashed_pw.salt], (error, rows, field) => {
-                    if (error) {
-                        // Query error again..
-                        debug("Register failed due to query error...");
-                        debug(error.message);
-                        res.redirect('/register.html');
-                    }
-                    else {
-                        debug(`User ${id}, ${hashed_pw.hashed_pw} successfully registered.`);
-                        res.redirect('/')
-                    }
-                })
-            }
-        })
-    }
-    else {
-        res.sendFile(path.join(__dirname, "./test_register.html"));
-    }
+    res.redirect("http://192.249.18.201:3000");
 });
 
 // Handle registration of user. This should be used.
@@ -175,46 +124,6 @@ app.post("/register", (req, res) => {
     }
 })
 
-// Testing code for login. Will be replaced.
-app.get("/login.html", (req, res) => {
-    var id = req.query.id;
-    var pw = req.query.pw;
-    if (id != undefined || pw != undefined) {
-        debug("query parameter: ID = " + req.query.id);
-        connection.query('select * from users where id=?', [id], async (error, rows, field) => {
-            if (error) {
-                // Query error.
-                debug("Login failed due to query error.");
-                res.redirect('/');
-            }
-            else if (rows.length == 0) {
-                debug("There is no such user, or password is incorrect.");
-                res.redirect('/');
-            }
-            else {
-                const user_info = rows[0];
-                if (await verify(pw, user_info.salt, user_info.pw)) {
-                    debug("Login success.");
-                    req.session.id = rows.id;
-                    req.session.is_logined = true;
-                    req.session.save(function() {
-                        res.cookie("id", id);
-                        res.redirect(`http://localhost:3000/index.html`);
-                    })
-                }
-                else {
-                    debug("There is no such user, or password is incorrect.");
-                    res.redirect("/");
-                }
-                
-            }
-        })
-    }
-    else {
-        res.sendFile(path.join(__dirname, "./test_login.html"));
-    }
-});
-
 // Handles login of user.
 app.post("/login", (req, res) => {
     var id = req.body.id;
@@ -254,8 +163,47 @@ app.post("/login", (req, res) => {
     }
 });
 
+
+
+// Update money every 10 seconds.
+const autoIncrementMoney = setInterval(function() {
+    io.emit("updateMoney", money.gainBaseIncome());
+    io.emit("displayMoney", {
+        amount: money.getBaseIncome(),
+        pos: {x: 53.0, y: 50.0}
+    });
+}, 10000);
+
+// Update goose movements 30 times per second.
+const updateGeeseMovement = setInterval(function() {
+    others.moveGeese();
+    users.user_info.forEach((user, id) => {
+        const socket = users.getSocket(id);
+        const others_list = others.getDiff(user);
+        if ((others_list.add.length > 0) || (others_list.move.length > 0) || (others_list.delete.length > 0)) {
+            io.to(socket).emit("updateOthers", others_list);
+        }
+    });
+}, 33);
+
+// Generate goose every 5 seconds.
+const spawnGoose = setInterval(function() {
+    const result = others.generateGoose();
+    if (result != undefined) {
+        console.log("Generated goose!!");
+        users.user_info.forEach((user, id) => {
+            const socket = users.getSocket(id);
+            const others_list = others.getDiff(user);
+            if ((others_list.add.length > 0) || (others_list.move.length > 0) || (others_list.delete.length > 0)) {
+                io.to(socket).emit("updateOthers", others_list);
+            }
+        })
+    }
+}, 5000);
+
+
+// Handle client.
 io.on('connection', (socket) => {
-    //socket.emit으로 현재 연결한 상대에게 신호를 보낼 수 있다.
     debug('IO: somebody entered');
 
     socket.on("enter", (user) => {
@@ -273,7 +221,7 @@ io.on('connection', (socket) => {
         };
         socket.emit("welcome", init_msg);
         // console.log(init_object_list);
-        console.log(socket.id);
+        // console.log(socket.id);
     
         user.id = user_temp_id;
 
@@ -283,8 +231,9 @@ io.on('connection', (socket) => {
 
         const result = cache.getDiff(user);
         result.add.push(user);
-        console.log(result);
+        // console.log(result);
         socket.emit("setObjList", result);
+        socket.emit("updateMoney", money.getCurrentMoney());
         socket.broadcast.emit("anotherUser", {
             type: "add",
             user: user
@@ -292,7 +241,11 @@ io.on('connection', (socket) => {
         users.setSocket(user_temp_id, socket.id);
         users.setUserInfo(user);
 
-        users.updateNeighbors(user);
+        const init_neighbors = users.updateNeighbors(user);
+
+        init_neighbors.forEach((action) => {
+            socket.emit("anotherUser", {type: "add", user: users.getUser(action.target)});
+        })
 
         // On updateUnit: returns set of objects (excluding characters) that should be added or deleted.
         socket.on("updateUnit", (msg) => {
@@ -301,15 +254,31 @@ io.on('connection', (socket) => {
             // - ID of the user
             // - position of the user (x, y)
     
-            console.log(`updateUnit: ${msg.id} (${msg.pos.x},${msg.pos.y})`);
+            // console.log(`updateUnit: ${msg.id} (${msg.pos.x},${msg.pos.y})`);
     
-            const result = cache.getDiff(msg);
+            var result = cache.getDiff(msg);
 
             // console.log(result);
+            const others_list = others.getDiff(msg);
+            if ((others_list.add.length > 0) || (others_list.move.length > 0) || (others_list.delete.length > 0)) {
+                socket.emit("updateOthers", others_list);
+            }
+
+            // const new_neighbors = users.updateNeighbors(msg);
+            // new_neighbors.forEach((item) => {
+            //     var type = item.type;
+            //     if (type == "add") {
+            //         result.add.push(item.user);
+            //     }
+            //     else if (type == "delete") {
+            //         result.delete.push(item.user);
+            //     }
+            // })
             
             // Emit information to the user whom sent move information.
             // Result contains two fields: {add: [], delete: []}
             socket.emit("updateObjList", result);
+            
         });
 
         // On move: updates neighbor list of users and send update message.
@@ -318,19 +287,63 @@ io.on('connection', (socket) => {
             // The clients will take care of movements.
             users.setUserInfo(user);
             const emit_list = users.updateNeighbors(user);
+            // console.log("move of user " + user.id);
 
             emit_list.forEach((item) => {
-
                 const socket_id = users.getSocket(item.target);
-                console.log(`User ${user.id} sends ${item.type} to User ${item.target}`);
+                // console.log(`User ${user.id} sends ${item.type} to User ${item.target}`);
                 const repacked_item = {type: item.type, user: user};
                 io.to(socket_id).emit("anotherUser", repacked_item);
+                // console.log("anotherUser(): " + item.type);
+                if (item.type == "add" || item.type == "delete") {
+                    socket.emit("anotherUser", {
+                        type: item.type,
+                        user: users.getUser(item.target)
+                    });
+                }
             });
         });
 
-        socket.on("enter_building", (msg) => {
-            // Access building. 
-            // TODO..
+        // Interaction on objects when pressing spacebar.
+        socket.on("interaction", (object_list) => {
+            if (object_list.length > 0) {
+                // TODO: enhance algorithm of selecting target object.
+                const target_object = object_list[0];
+
+                const user_id = users.getUserIdFromSocket(socket.id);
+                const user = users.getUser(user_id);
+
+                switch (target_object.type) {
+                    case "goose":
+                        const goose_value = others.gooseValue();
+                        money.gainMoney(goose_value);
+                        // console.log("target_object = ", JSON.stringify(target_object));
+                        io.emit("updateOthers", {
+                            add: [],
+                            move: [],
+                            delete: [target_object]
+                        });
+                        others.removeGoose(target_object.id);
+                        io.emit("updateMoney", money.getCurrentMoney());
+                        socket.emit("displayMoney", {
+                            amount: goose_value,
+                            pos: target_object.pos
+                        });
+                        break;
+                    default:
+                        console.log("todo.");
+                        break;
+                }
+            }
+        });
+
+        socket.on("clickGround", (msg) => {
+            const amount = msg.amount;
+            const pos = msg.pos;
+            const new_money = money.gainMoney(amount);
+            // console.log(`clickGround: users have ${new_money} now`);
+            io.emit("updateMoney", new_money);
+            socket.emit("displayMoney", msg);
         });
 
         socket.on("disconnect", (reason) => {

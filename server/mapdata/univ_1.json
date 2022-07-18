@@ -24,8 +24,8 @@
                     "height": 4
                 },
                 "pos": {
-                    "x": 40.0,
-                    "y": 60.0
+                    "x": 46.0,
+                    "y": 54.0
                 },
                 "img": "/images/building_cafeteria.png",
                 "id": 2,
@@ -40,8 +40,8 @@
                     "height": 6
                 },
                 "pos": {
-                    "x": 55,
-                    "y": 40
+                    "x": 50.0,
+                    "y": 43.0
                 },
                 "img": "/images/building_classroom.png",
                 "id": 3,

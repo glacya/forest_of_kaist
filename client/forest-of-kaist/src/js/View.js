@@ -1,8 +1,9 @@
 import React, { useEffect, useState }  from "react";
-import { socket } from "../App";
+import { socket } from "./Game";
 import { mapClass } from "./Map";
 import { ObjectFunc } from "./Object";
 import { user } from "./Character";
+import {viewClickListener} from "./Money"
 
 class ViewClass{
   constructor(size, pos) {
@@ -81,8 +82,14 @@ function View() {
     const divElement = React.createElement(
       "div",
       { 
-        width: mapClass.unitToPx(view.size.width),
-        height: mapClass.unitToPx(view.size.height)
+        style: {
+          position: "absolute",
+          left: 0,
+          top: 0,
+          width: mapClass.unitToPx(view.size.width),
+          height: mapClass.unitToPx(view.size.height)
+        },
+        onClick: (e) => { viewClickListener(e) }
       }
     )
     return (divElement);

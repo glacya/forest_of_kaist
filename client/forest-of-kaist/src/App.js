@@ -4,24 +4,15 @@ import React, { useEffect, useState, useRef } from "react";
 import {Link, Route, Routes,Switch, BrowserRouter} from "react-router-dom";
 import ReactDOM from 'react-dom';
 import { createPortal } from "react-dom";
-import io from 'socket.io-client';
 import Cookies from 'js-cookie';
 
-import { View } from './js/View';
-// import Character from './js/Character';
-// import Building from './js/Building';
-import { ObjectFunc } from './js/Object';
 
 import Login from './js/login/Login';
 import Register from './js/login/Register'
 import Layout from './js/login/Layout';
 
-// const address = "http://172.10.18.171";
-const address = "http://192.249.18.201";
+import { Game } from './js/Game';
 
-const socket = io.connect(address, {
-  cors: { origin: ["http://localhost", "http://localhost:3000","http://localhost:3001"]}
-});
 
 
 // ReactDOM.render(
@@ -34,18 +25,6 @@ const socket = io.connect(address, {
 function App() {
   const userId = Cookies.get('id');
   // console.log(`userId: ${userId}`);
-  const frame = React.createElement(
-    "img",
-    { 
-
-      src: "/images/frame.png",
-      alt: "Frame", 
-      style: { 
-        position: "absolute",
-        zIndex: 10
-      }
-    }
-  )
   return (
     // <div>
     //   <Route path="/" component={Layout} exact={true} />
@@ -53,16 +32,21 @@ function App() {
     //   <Route path="/register" component={Register} />
     // </div>
 
-    // <Routes>
-    //   <Route path="/" element={<Layout />}>
-    //     {/* public routes */}
-    //     <Route path="login" element={<Login />} />
-    //     <Route path="register" element={<Register />} />
-        
-    //     {/* catch all
-    //     <Route path="*" element={<Missing />} /> */}
-    //   </Route>
-    // </Routes>
+
+    <main className='App'>
+    <BrowserRouter>
+     <Routes>
+      {/* <Route path="/" element={<Login />}> */}
+        {/* public routes */}
+        <Route path="/login" element={<Login />} />
+        <Route path="/register" element={<Register />} />
+        <Route path="/game" element={<Game />} />
+        <Route path="*" element={<Login/>} />
+      {/* </Route> */}
+    </Routes>
+    </BrowserRouter>
+      </main>
+   
     
     // <main className='App'>
     //   <Register /> 
@@ -70,14 +54,14 @@ function App() {
     
     
     // <RenderInWindow>
-    <div>
-      { View() }
-      { ObjectFunc() }
-      { frame }
-    </div>
+    // <div>
+    //   { View() }
+    //   { ObjectFunc() }
+    //   { frame }
+    // </div>
     // </RenderInWindow>
     
   );
 }
 
-export { App, socket };
+export { App };

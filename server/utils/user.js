@@ -20,8 +20,12 @@ class Users {
         return this.current_id;
     }
 
+    getUser(user_id) {
+        return this.user_info.get(user_id);
+    }
+
     setUserInfo(user) {
-        console.log(`setUserInfo: ${user.id}, ${user.pos.x}, ${user.pos.y}`);
+        // console.log(`setUserInfo: ${user.id}, ${user.pos.x}, ${user.pos.y}`);
         this.user_info.set(user.id, user);
     }
 
@@ -30,12 +34,13 @@ class Users {
     }
 
     setSocket(user_id, socket_id) {
+        console.log(`setSocket(${user_id}, ${socket_id})`);
         this.sockets.set(user_id, socket_id);
     }
 
     // Returns list of user_id's.
     computeNeighbors(user) {
-        console.log(`computeNeighbors of ${user.id}`);
+        // console.log(`computeNeighbors of ${user.id}`);
         var user_list = [];
 
         this.user_info.forEach((neigh_info, neigh_id) => {
@@ -44,7 +49,7 @@ class Users {
             }
         });
 
-        console.log(`   Result was ${user_list}`);
+        // console.log(`   Result was ${user_list}`);
 
         return user_list;
     }
@@ -121,7 +126,7 @@ class Users {
                     exists = true;
                 }
             });
-            if (!exists) {
+            if (!exists && id1 != user.id) {
                 vanishing.push(id1);
                 instruction_set.push({
                     type: "delete",
@@ -141,7 +146,7 @@ class Users {
                     exists = true;
                 }
             });
-            if (!exists) {
+            if (!exists && id1 != user.id) {
                 emerging.push(id1);
                 instruction_set.push({
                     type: "add",
@@ -175,18 +180,23 @@ class Users {
         return instruction_set;
     }
 
-    // Cleans up resources of socket id.
-    // Additionally, sends delete to all users.
-    cleanUp(socket_id) {
+    getUserIdFromSocket(socket_id) {
         var id = undefined;
         this.sockets.forEach((sock, uid) => {
-            if (sock == socket_id) {
+            if (sock.toString() === socket_id.toString()) {
                 id = uid;
             }
         });
+        return id;
+    }
+
+    // Cleans up resources of socket id.
+    // Additionally, sends delete to all users.
+    cleanUp(socket_id) {
+        const id = this.getUserIdFromSocket(socket_id);
         this.sockets.delete(id);
 
-        if (id == undefined) {
+        if (id === undefined) {
             console.log("That socket does not exist")
             return;
         }
@@ -201,7 +211,7 @@ class Users {
         
         neighbors.forEach((neigh_id) => {
             var neigh_list = this.user_neighbors.get(neigh_id);
-            neigh_list = neigh_list.filter(myid => myid != id);
+            neigh_list = neigh_list === undefined ? [] : neigh_list.filter(myid => myid != id);
             this.user_neighbors.set(neigh_id, neigh_list);
         });
         this.user_neighbors.delete(id);

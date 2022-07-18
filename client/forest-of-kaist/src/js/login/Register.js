@@ -7,8 +7,8 @@ import axios from './axios'
 
 const USER_REGEX = /^[A-z][A-z0-9-_]{3,23}$/;
 const PWD_REGEX = /^(?=.*[a-z])(?=.*[A-Z])(?=.*[0-9])(?=.*[!@#$%]).{8,24}$/;
-//const REGISTER_URL = 'http://192.249.18.201/register';
-const REGISTER_URL = '/register';
+const REGISTER_URL = 'http://192.249.18.201/register';
+// const REGISTER_URL = '/register';
 
 
 const Register = () => {
@@ -35,11 +35,13 @@ const Register = () => {
     }, [])
 
     useEffect(() => {
-        setValidName(USER_REGEX.test(user));
+        // setValidName(USER_REGEX.test(user));
+        setValidName(true);
     }, [user])
 
     useEffect(() => {
-        setValidPwd(PWD_REGEX.test(pwd));
+        // setValidPwd(PWD_REGEX.test(pwd));
+        setValidPwd(true);
         setValidMatch(pwd === matchPwd);
     }, [pwd, matchPwd])
 
@@ -50,8 +52,8 @@ const Register = () => {
     const handleSubmit = async (e) => {
         e.preventDefault();
         // if button enabled with JS hack
-        const v1 = USER_REGEX.test(user);
-        const v2 = PWD_REGEX.test(pwd);
+        const v1 = USER_REGEX.test(user) || true;
+        const v2 = PWD_REGEX.test(pwd) || true;
         if (!v1 || !v2) {
             setErrMsg("Invalid Entry");
             return;
@@ -91,7 +93,7 @@ const Register = () => {
                 <section>
                     <h1>Success!</h1>
                     <p>
-                        <a href="#">Sign In</a>
+                        <a href="/login">Sign In</a>
                     </p>
                 </section>
             ) : (

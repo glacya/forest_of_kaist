@@ -4,8 +4,8 @@ import { useRef, useState, useEffect, useContext } from 'react';
 import AuthContext from "./AuthProvider";
 
 import axios from './axios';
-//const LOGIN_URL = 'http://192.249.18.201/login';
-const LOGIN_URL = '/login';
+const LOGIN_URL = 'http://192.249.18.201/login';
+// const LOGIN_URL = '/login';
 
 
 
@@ -40,11 +40,12 @@ const Login = () => {
             );
             console.log(JSON.stringify(response?.data));
             //console.log(JSON.stringify(response));
-            const accessToken = response?.data?.accessToken;
-            const roles = response?.data?.roles;
-            setAuth({ user, pwd, roles, accessToken });
-            setUser('');
-            setPwd('');
+            //const accessToken = response?.data?.accessToken;
+            //console.log(accessToken);
+            //const roles = response?.data?.roles;
+            //setAuth({ user, pwd, roles, accessToken });
+            //setUser('');
+            //setPwd('');
             setSuccess(true);
         } catch (err) {
             if (!err?.response) {
@@ -67,7 +68,7 @@ const Login = () => {
                     <h1>You are logged in!</h1>
                     <br />
                     <p>
-                        <a href="#">Go to Home</a>
+                        <a href="/game">Go to Game</a>
                     </p>
                 </section>
             ) : (
